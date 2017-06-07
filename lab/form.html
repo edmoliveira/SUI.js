@@ -1,0 +1,21 @@
+<html>
+    <head>  
+        <title>Form SUI.js</title>
+        <script src="form.js"></script>
+    </head>
+    <body>
+        <div sui-form="caduser">
+            First Name: <div sui-type="text" sui-prop="firstname"></div>
+        </div>
+
+        <div sui-form="searchuser">
+            <h1 sui-value="firstname"></h1>
+        </div>
+    </body>
+</html>
+<script>
+
+    $sui.ready(function () {
+        var caduser = $sui.form('caduser');
+    });
+</script>
