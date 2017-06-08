@@ -50,6 +50,10 @@ $sui.components = {
 
         el.__sui__.setValue = function (v) {
             el.value = v;
+
+            if (el.__sui__.valueChanged != null) {
+                el.__sui__.valueChanged(el.value);
+            }
         }
 
         el.__sui__.getValueNoMask = function () {
@@ -58,7 +62,13 @@ $sui.components = {
 
         el.__sui__.setValueNoMask = function (v) {
             el.value = v;
+
+            if (el.__sui__.valueChanged != null) {
+                el.__sui__.valueChanged(el.value);
+            }
         }
+
+        el.__sui__.valueChanged = null;
 
         return el;
     }
@@ -81,6 +91,8 @@ $sui.form = function (selector, action) {
                 modelForm = createModelForm(m);
 
                 searchComponents(modelForm);
+
+                searchLegends(modelForm);
             }
 
             this.checkForm = null;
@@ -101,7 +113,11 @@ $sui.form = function (selector, action) {
         }
 
         function propertyModel(model, propertyName) {
+            var self = this;
+
             var el = null;
+
+            this.legendCollection = [];
 
             this.setElement = function (elem) {
                 el = elem;
@@ -114,6 +130,12 @@ $sui.form = function (selector, action) {
                     else {
                         this.__sui__.setValue(v);
                     }
+                }
+
+                el.__sui__.valueChanged = function (v) {
+                    self.legendCollection.forEach(function (item, index) {
+                        item.setValue(v);
+                    });
                 }
             }
 
@@ -131,6 +153,29 @@ $sui.form = function (selector, action) {
 
             this.setNoMask = function (v) {
                 el.__sui__.setValueNoMask(v);
+            }
+        }
+
+        function searchLegends(model) {
+            var legendCollection = element.querySelectorAll('[sui-value]'); //
+
+            for (var index = 0; index < legendCollection.length; index++) {
+                var el = legendCollection[index];
+                var attr = legendCollection[index].attributes;
+
+                var value = attr.getNamedItem('sui-value').value;
+                //var script = result[1];
+                var reg = new RegExp(/\$sui\.\w+/g);
+
+                var result = reg.exec(value);
+
+                for (var c = 1; c < result.length; c++) {
+                    var propName = result[c].replace('$sui.', '');
+
+                    model.__sui__[propName].legendCollection.push({ el: el, textRepl: result[c] });
+                }
+
+                legendCollection[index].removeAttribute('sui-value');
             }
         }
 
@@ -182,7 +227,7 @@ $sui.form = function (selector, action) {
                             }
 
                             if (prop != null) {
-                                
+
                                 var propName = prop.value;
 
                                 var objModel = model.__sui__;
