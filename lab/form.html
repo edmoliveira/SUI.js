@@ -6,9 +6,17 @@
     </head>
     <body>
         <div id="1" sui-form="caduser">
-            Type your name: <sui-comp type="text" prop="yourName" mask="time" tabIndex="0" nextTabIndex="1"></sui-comp>
+            <p>
+                Type your Name
+            </p>
+            First Name: <sui-comp type="text" prop="firstName" mask="time" tabIndex="0" nextTabIndex="1"></sui-comp>
             <br />
-            <h1 sui-value="Your Name: $sui.yourName"></h1>
+            <br />
+            Last Name: <sui-comp type="text" prop="lastName" mask="time" tabIndex="0" nextTabIndex="1"></sui-comp>
+            <br />
+            <p>
+                <h1 sui-value="Your Name: $sui.firstName $sui.lastName"></h1>
+            </p>
         </div>
 
         <div sui-form="searchuser">
@@ -17,19 +25,22 @@
     </body>
 </html>
 <script>
+
     $sui.ready(function () {
         $sui.form('caduser', function (control) {
             control.Model = new cadUserModel();
 
-            control.Model.yourName = "Edson Mendes de Oliveira";
+            control.Model.firstName = "Edson";
+            control.Model.lastName = "Mendes de Oliveira";
 
             control.checkForm = function (model) {
-                //if(m.yourName.get
+                
             }
         });
     });
     
     function cadUserModel() {
-        this.yourName = ''
+        this.firstName = ''
+        this.lastName = ''
     }
 </script>

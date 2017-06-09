@@ -51,9 +51,7 @@ $sui.components = {
         el.__sui__.setValue = function (v) {
             el.value = v;
 
-            if (el.__sui__.valueChanged != null) {
-                el.__sui__.valueChanged(el.value);
-            }
+            triggerValueChanged();
         }
 
         el.__sui__.getValueNoMask = function () {
@@ -63,12 +61,18 @@ $sui.components = {
         el.__sui__.setValueNoMask = function (v) {
             el.value = v;
 
-            if (el.__sui__.valueChanged != null) {
-                el.__sui__.valueChanged(el.value);
-            }
+            triggerValueChanged();
         }
 
-        el.__sui__.valueChanged = null;
+        el.__sui__.valueChanged = [];
+
+        function triggerValueChanged() {
+            if (el.__sui__.valueChanged.length) {
+                el.__sui__.valueChanged.forEach(function (item, index) {
+                    item({ value: el.value, valueNoMask: el.value });
+                });
+            }
+        }
 
         return el;
     }
@@ -112,31 +116,31 @@ $sui.form = function (selector, action) {
             action(new formSuiJS());
         }
 
-        function propertyModel(model, propertyName) {
+        function propertyModel(model, prop) {
             var self = this;
 
             var el = null;
 
-            this.legendCollection = [];
+            this.propertyName = prop;
 
             this.setElement = function (elem) {
                 el = elem;
-                el.onchange = function () {
+                $sui.func.addEvent('change', el, function () {
                     if (model.onChangeProperty != null) {
-                        if (model.onChangeProperty(model, propertyName, this.__sui__.getOldValue(), this.__sui__.getValue())) {
-                            this.__sui__.setValue(v);
+                        if (model.onChangeProperty(model, self.propertyName, this.__sui__.getOldValue(), this.__sui__.getValue())) {
+                            this.__sui__.setValue(this.value);
                         }
                     }
                     else {
-                        this.__sui__.setValue(v);
+                        this.__sui__.setValue(this.value);
                     }
-                }
+                });
 
-                el.__sui__.valueChanged = function (v) {
-                    self.legendCollection.forEach(function (item, index) {
-                        item.setValue(v);
+                el.__sui__.valueChanged.push(function (obj) {
+                    self.onChangeValue.forEach(function (item, index) {
+                        item(obj);
                     });
-                }
+                });
             }
 
             this.get = function () {
@@ -154,6 +158,8 @@ $sui.form = function (selector, action) {
             this.setNoMask = function (v) {
                 el.__sui__.setValueNoMask(v);
             }
+
+            this.onChangeValue = [];
         }
 
         function searchLegends(model) {
@@ -164,18 +170,49 @@ $sui.form = function (selector, action) {
                 var attr = legendCollection[index].attributes;
 
                 var value = attr.getNamedItem('sui-value').value;
-                //var script = result[1];
+
+                el.__sui__ = new Object();
+                el.__sui__.properties = [];
+
                 var reg = new RegExp(/\$sui\.\w+/g);
 
-                var result = reg.exec(value);
+                var result;
+                while ((result = reg.exec(value)) != null) {
+                    var propName = result[0].replace('$sui.', '');
 
-                for (var c = 1; c < result.length; c++) {
-                    var propName = result[c].replace('$sui.', '');
+                    if (model.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + '][' + el.innerHTML + ']'; }
 
-                    model.__sui__[propName].legendCollection.push({ el: el, textRepl: result[c] });
+                    var property = model.__sui__[propName];
+
+                    (function (element, text, objProp) {
+                        objProp.onChangeValue.push(function () {
+                            fillLegendValue(element, text);
+                        });
+                    }
+                    )(el, value, property);
+
+                    el.__sui__.properties.push(property);
                 }
+                
+                fillLegendValue(el, value);
 
                 legendCollection[index].removeAttribute('sui-value');
+            }
+
+            function fillLegendValue(element, text) {
+                for (var iProp = 0; iProp < element.__sui__.properties.length; iProp++) {
+                    var item = element.__sui__.properties[iProp];
+
+                    var code = '$sui.' + item.propertyName;
+
+                    text = text.replace(code, item.get());
+                }
+
+                element.innerHTML = text;
+            }
+
+            function legendPropModel(el, text, objProp) {
+
             }
         }
 
@@ -236,23 +273,25 @@ $sui.form = function (selector, action) {
 
                                 objModel[prop.value].setElement(comp);
 
-                                Object.defineProperty(model, propName, {
-                                    get: function () {
-                                        return this.__sui__[propName].get();
-                                    }
-                                    , set: function (v) {
-                                        return this.__sui__[propName].set(v);
-                                    }
-                                });
+                                (function (senderModel, propertyName) {
+                                    Object.defineProperty(senderModel, propertyName, {
+                                        get: function () {
+                                            return this.__sui__[propertyName].get();
+                                        }
+                                        , set: function (v) {
+                                            return this.__sui__[propertyName].set(v);
+                                        }
+                                    });
 
-                                Object.defineProperty(model.noMask, propName, {
-                                    get: function () {
-                                        return this.__sui__[propName].get();
-                                    }
-                                    , set: function (v) {
-                                        return this.__sui__[propName].set(v);
-                                    }
-                                });
+                                    Object.defineProperty(senderModel.noMask, propertyName, {
+                                        get: function () {
+                                            return this.__sui__[propertyName].get();
+                                        }
+                                        , set: function (v) {
+                                            return this.__sui__[propertyName].set(v);
+                                        }
+                                    });
+                                })(model, propName);
 
                                 attr.removeNamedItem('prop');
                             }
