@@ -7,15 +7,21 @@
     <body>
         <div id="1" sui-form="caduser">
             <p>
-                Type your Name
+                Type your:
             </p>
-            First Name: <sui-comp type="text" prop="firstName" mask="time" tabIndex="0" nextTabIndex="1"></sui-comp>
-            <br />
-            <br />
-            Last Name: <sui-comp type="text" prop="lastName" mask="time" tabIndex="0" nextTabIndex="1"></sui-comp>
-            <br />
             <p>
-                <h1 sui-value="Your Name: $sui.firstName $sui.lastName"></h1>
+                First Name: <tt sui-comp = "text" prop="firstName" mask="time" tabIndex="0" nextTabIndex="1"></tt>
+            </p>
+            <p>
+                Last Name: <tt sui-comp = "text" prop="lastName" mask="time" tabIndex="1" nextTabIndex="2"></tt>
+            </p>
+            <p>
+                Wife Name: <tt sui-comp = "text" prop="wifeName" mask="time" tabIndex="2" nextTabIndex="0"></tt>
+            </p>
+            <p>
+                <h1 sui-value="Your Name: $sui.firstName $sui.lastName" ></h1>
+                <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
+                <input id="Button1" type="button" value="button" onclick="testando();" />
             </p>
         </div>
 
@@ -25,22 +31,31 @@
     </body>
 </html>
 <script>
-
+    var a = null;
     $sui.ready(function () {
-        $sui.form('caduser', function (control) {
-            control.Model = new cadUserModel();
+        $sui.loadControl('caduser', new cadUserModel(), function ($control, $model, $func) {
 
-            control.Model.firstName = "Edson";
-            control.Model.lastName = "Mendes de Oliveira";
+            $model.firstName = 'Edson';
+            $model.lastName = 'Mendes de Oliveira';
+            $model.wifeName = 'Eliane F. Dos Santos';
 
-            control.checkForm = function (model) {
-                
+            $control.checkForm = function () {
+
             }
+
+            a = $control.Model;
+
+            $func.firstName.focus();
         });
     });
     
     function cadUserModel() {
         this.firstName = ''
         this.lastName = ''
+        this.wifeName = '';
+    }
+
+    function testando() {
+        a.$func.firstName.changeNextTabIndex(2);
     }
 </script>
