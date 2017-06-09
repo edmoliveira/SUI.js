@@ -1,5 +1,10 @@
 'use strict';
 
+var OBJECT_TYPE = {
+    NO_ARRAY: 0
+    , ARRAY: 1
+};
+
 function $sui() {
     if(!(this instanceof $sui)) return $sui();
 
@@ -54,6 +59,10 @@ $sui.components = {
         el.type = 'text';
         el.__sui__ = new Object();
 
+        el.__sui__.objectType = function () {
+            return OBJECT_TYPE.NO_ARRAY;
+        }
+
         el.__sui__.getValue = function () {
             return el.value;
         }
@@ -88,9 +97,7 @@ $sui.components = {
     }
 }
 
-$sui.loadControl = function (selector, model, action) {
-    if (model == null) { throw 'Model is null [form(selector, model, action)]'; }
-
+$sui.loadControl = function (selector, action) {
     var elementCollection = document.querySelectorAll('[sui-form="' + selector + '"]');
 
     if (elementCollection.length > 0) {
@@ -103,24 +110,15 @@ $sui.loadControl = function (selector, model, action) {
                 return modelForm;
             }
 
-            this.___setprotoM = function (m) {
-                modelForm = createModelForm(m);
-
-                searchComponents(modelForm);
-
-                searchLegends(modelForm);
-            }
-
             this.checkForm = null;
 
+            modelForm = searchComponents();
+            searchLegends(modelForm);
         }
 
         Object.defineProperty(formSuiJS.prototype, "Model", {
             get: function () {
                 return this.___getprotoM();
-            }
-            , set: function (v) {
-                return this.___setprotoM(v);
             }
         });
 
@@ -128,7 +126,6 @@ $sui.loadControl = function (selector, model, action) {
 
         if (action != null) {
             oFormSuiJS = new formSuiJS();
-            oFormSuiJS.Model = model;
 
             action(oFormSuiJS, oFormSuiJS.Model, oFormSuiJS.Model.$func);
         }
@@ -277,21 +274,7 @@ $sui.loadControl = function (selector, model, action) {
         function createModelForm(crtlModel) {
             var newModel = new Object();
 
-            newModel.__sui__ = new Object();
 
-            newModel.$func = new Object();
-            newModel.$func.__sui__ = newModel.__sui__;
-
-            newModel.__sui__.$components = new Object();
-            newModel.__sui__.$components.items = [];
-            newModel.__sui__.$components.moveFocus = function (tabIndex) {
-                for (var index = 0; index < this.items.length; index++) {
-                    if (this.items[index].tabIndex == $sui.func.textToInt(tabIndex)) {
-                        this.items[index].focus();
-                        break;
-                    }
-                }
-            }
 
             for (var prop in crtlModel) {
                 var value = crtlModel[prop];
@@ -304,7 +287,25 @@ $sui.loadControl = function (selector, model, action) {
             return newModel;
         }
 
-        function searchComponents(crtlModel) {
+        function searchComponents() {
+            var crtlModel = new Object();
+
+            crtlModel.__sui__ = new Object();
+
+            crtlModel.$func = new Object();
+            crtlModel.$func.__sui__ = crtlModel.__sui__;
+
+            crtlModel.__sui__.$components = new Object();
+            crtlModel.__sui__.$components.items = [];
+            crtlModel.__sui__.$components.moveFocus = function (tabIndex) {
+                for (var index = 0; index < this.items.length; index++) {
+                    if (this.items[index].tabIndex == $sui.func.textToInt(tabIndex)) {
+                        this.items[index].focus();
+                        break;
+                    }
+                }
+            }
+
             var compCollection = element.querySelectorAll('[sui-comp]');
 
             for (var index = 0; index < compCollection.length; index++) {
@@ -313,9 +314,11 @@ $sui.loadControl = function (selector, model, action) {
                 var attr = elementComp.attributes;
 
                 var type = attr.getNamedItem('sui-comp');
+                var prop = attr.getNamedItem('prop');
 
-                if (type != null) {
-                    var prop = attr.getNamedItem('prop');
+                if (type != null && prop != null) {
+                    var propName = prop.value;
+
                     var mask = attr.getNamedItem('mask');
                     var tabIndex = attr.getNamedItem('tabIndex');
                     var nextTabIndex = attr.getNamedItem('nextTabIndex');
@@ -325,6 +328,12 @@ $sui.loadControl = function (selector, model, action) {
                     if (funcName == null) { throw 'This component type not exists [' + type.value + ']'; }
 
                     var comp = $sui.components[funcName]();
+
+                    if (comp.__sui__.objectType() == OBJECT_TYPE.NO_ARRAY) {
+                        crtlModel.__sui__[propName] = new propertyModel(crtlModel, propName);
+                    }
+                    else {
+                    }
 
                     crtlModel.__sui__.$components.items.push(comp);
 
@@ -338,39 +347,33 @@ $sui.loadControl = function (selector, model, action) {
                         attr.removeNamedItem('mask');
                     }
 
-                    if (prop != null) {
+                    var objModel = crtlModel.__sui__;
 
-                        var propName = prop.value;
+                    if (objModel[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
 
-                        var objModel = crtlModel.__sui__;
+                    objModel[prop.value].setElement(comp);
 
-                        if (objModel[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
+                    (function (senderModel, propertyName) {
+                        Object.defineProperty(senderModel, propertyName, {
+                            get: function () {
+                                return this.__sui__[propertyName].get();
+                            }
+                            , set: function (v) {
+                                return this.__sui__[propertyName].set(v);
+                            }
+                        });
+                    })(crtlModel, propName);
 
-                        objModel[prop.value].setElement(comp);
+                    crtlModel.$func[propName] = new funcPropertyModel(objModel[prop.value]);
 
-                        (function (senderModel, propertyName) {
-                            Object.defineProperty(senderModel, propertyName, {
-                                get: function () {
-                                    return this.__sui__[propertyName].get();
-                                }
-                                , set: function (v) {
-                                    return this.__sui__[propertyName].set(v);
-                                }
-                            });
-                        })(crtlModel, propName);
+                    if (tabIndex != null && nextTabIndex != null) {
+                        objModel[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
 
-                        crtlModel.$func[propName] = new funcPropertyModel(objModel[prop.value]);
-
-                        if (tabIndex != null && nextTabIndex != null) {
-                            objModel[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
-
-                            attr.removeNamedItem('nextTabIndex');
-                            attr.removeNamedItem('tabIndex');
-                        }
-
-                        attr.removeNamedItem('prop');
+                        attr.removeNamedItem('nextTabIndex');
+                        attr.removeNamedItem('tabIndex');
                     }
 
+                    attr.removeNamedItem('prop');
                     attr.removeNamedItem('sui-comp');
 
                     for (var iAttr = 0; iAttr < attr.length; iAttr++) {
@@ -395,6 +398,8 @@ $sui.loadControl = function (selector, model, action) {
 
                 return name;
             }
+
+            return crtlModel;
         }
     }
 }

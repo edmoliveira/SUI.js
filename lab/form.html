@@ -21,7 +21,6 @@
             <p>
                 <h1 sui-value="Your Name: $sui.firstName $sui.lastName" ></h1>
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
-                <input id="Button1" type="button" value="button" onclick="testando();" />
             </p>
         </div>
 
@@ -31,10 +30,8 @@
     </body>
 </html>
 <script>
-    var a = null;
-    $sui.ready(function () {
-        $sui.loadControl('caduser', new cadUserModel(), function ($control, $model, $func) {
-
+    $sui.ready(function () {        
+        $sui.loadControl('caduser', function ($control, $model, $func) {
             $model.firstName = 'Edson';
             $model.lastName = 'Mendes de Oliveira';
             $model.wifeName = 'Eliane F. Dos Santos';
@@ -43,19 +40,7 @@
 
             }
 
-            a = $control.Model;
-
             $func.firstName.focus();
         });
     });
-    
-    function cadUserModel() {
-        this.firstName = ''
-        this.lastName = ''
-        this.wifeName = '';
-    }
-
-    function testando() {
-        a.$func.firstName.changeNextTabIndex(2);
-    }
 </script>
