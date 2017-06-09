@@ -5,7 +5,7 @@
         <script src="suiJS.extends.js"></script>
     </head>
     <body>
-        <div id="1" sui-form="caduser">
+        <div sui-form="caduser">
             <p>
                 Type your:
             </p>
@@ -22,6 +22,9 @@
                 <h1 sui-value="Your Name: $sui.firstName $sui.lastName" ></h1>
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
             </p>
+            <tt sui-comp="repeater" prop="children">
+                <div>$sui.index</div>
+            </tt>
         </div>
 
         <div sui-form="searchuser">
@@ -30,11 +33,14 @@
     </body>
 </html>
 <script>
-    $sui.ready(function () {        
+
+
+    $sui.ready(function () {
         $sui.loadControl('caduser', function ($control, $model, $func) {
             $model.firstName = 'Edson';
             $model.lastName = 'Mendes de Oliveira';
             $model.wifeName = 'Eliane F. Dos Santos';
+            $model.children.source = ['filho1', 'filho2', 'filho3'];
 
             $control.checkForm = function () {
 

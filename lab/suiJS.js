@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 var OBJECT_TYPE = {
     NO_ARRAY: 0
@@ -91,6 +91,79 @@ $sui.components = {
                     item({ value: el.value, valueNoMask: el.value });
                 });
             }
+        }
+
+        return el;
+    }
+    , createRepeater: function () {
+        var sourceArray = [];
+        var settings = null;
+
+        var el = document.createElement('DIV');
+
+        el.__sui__ = new Object();
+
+        el.__sui__.objectType = function () {
+            return OBJECT_TYPE.ARRAY;
+        }
+
+        el.__sui__.setSettings = function (s) {
+            settings = s;
+        }
+
+        el.__sui__.getSource = function () {
+            return sourceArray;
+        }
+
+        el.__sui__.setSource = function (source) {
+            sourceArray = source;
+
+            triggerValueChanged();
+
+            drawSource();
+        }
+
+        el.__sui__.addItem = function (item) {
+            sourceArray.push(item);
+
+            triggerValueChanged();
+        }
+
+        el.__sui__.valueChanged = [];
+
+        function triggerValueChanged() {
+            if (el.__sui__.valueChanged.length) {
+                el.__sui__.valueChanged.forEach(function (item, index) {
+                    item(sourceArray);
+                });
+            }
+        }
+
+        function drawSource() {
+            el.innerHTML = '';
+
+            sourceArray.forEach(function (item, index) {
+                var content = settings;
+
+                var reg = new RegExp(/\$sui\.\w+/g);
+
+                var result;
+                while ((result = reg.exec(content)) != null) {
+                    if (result[0] == '$sui.index') {
+                        content = content.replace('$sui.index', item);
+                    }
+                    else {
+
+                    }
+                }
+
+                var parser = new DOMParser();
+                var xml = parser.parseFromString(content, "text/xml");
+                
+                for (var iChild = 0; iChild < xml.childNodes.length; iChild++) {
+                    el.appendChild(xml.childNodes[iChild]); 
+                }
+            });
         }
 
         return el;
@@ -221,6 +294,81 @@ $sui.loadControl = function (selector, action) {
             this.onChangeValue = [];
         }
 
+        function funcPropertyArrayModel(propertyArrayModel) {
+            this.changeNextTabIndex = function (newNextTabIndex) {
+                propertyArrayModel.changeNextTabIndex(newNextTabIndex);
+            }
+
+            this.focus = function () {
+                propertyArrayModel.focus();
+            }
+        }
+
+        function propertyArrayModel(crtlModel, prop) {
+            var self = this;
+
+            this.el = null;
+            var tbIn = 0;
+            var ntTbIn = 0;
+
+            this.propertyName = prop;
+
+            this.setElement = function (elem) {
+                this.el = elem;
+
+                $sui.func.addEvent('keydown', this.el, function (e) {
+                    var key = e.charCode || e.keyCode || 0;
+
+                    if (key == 9) {
+                        e.preventDefault();
+
+                        crtlModel.__sui__.$components.moveFocus(ntTbIn);
+                    }
+                });
+
+                this.el.__sui__.valueChanged.push(function (obj) {
+                    self.onChangeValue.forEach(function (item, index) {
+                        item(obj);
+                    });
+                });
+            }
+
+            this.focus = function () {
+                el.focus();
+            }
+
+            this.setTabIndex = function (tabIndex, nextTabIndex) {
+                el.tabIndex = tabIndex;
+
+                tbIn = tabIndex;
+                ntTbIn = nextTabIndex;
+            }
+
+            this.changeNextTabIndex = function (newNextTabIndex) {
+                ntTbIn = newNextTabIndex;
+            }
+
+            this.onChangeValue = [];
+
+
+        }
+
+        function classArray(propertyArrayModel) {
+            this.__sui__ = new Object();
+
+            this.__sui__.getSource = function () {
+                return propertyArrayModel.el.__sui__.getSource();
+            }
+
+            this.__sui__.setSource = function (source) {
+                propertyArrayModel.el.__sui__.setSource(source);
+            }
+
+            this.add = function (item) {
+                propertyArrayModel.el.__sui__.addItem(item);
+            }
+        }
+
         function searchLegends(crtlModel) {
             var legendCollection = element.querySelectorAll('[sui-value]');
 
@@ -271,22 +419,6 @@ $sui.loadControl = function (selector, action) {
             }
         }
 
-        function createModelForm(crtlModel) {
-            var newModel = new Object();
-
-
-
-            for (var prop in crtlModel) {
-                var value = crtlModel[prop];
-
-                if (typeof value != 'array') {
-                    newModel.__sui__[prop] = new propertyModel(newModel, prop);
-                }
-            }
-
-            return newModel;
-        }
-
         function searchComponents() {
             var crtlModel = new Object();
 
@@ -331,47 +463,75 @@ $sui.loadControl = function (selector, action) {
 
                     if (comp.__sui__.objectType() == OBJECT_TYPE.NO_ARRAY) {
                         crtlModel.__sui__[propName] = new propertyModel(crtlModel, propName);
+
+                        crtlModel.$func[propName] = new funcPropertyModel(crtlModel.__sui__[prop.value]);
+
+                        if (mask != null) {
+                            funcName = findFunction($sui.masks, mask.value);
+
+                            if (funcName == null) { throw 'This mask name not exists [' + mask.value + ']'; }
+
+                            $sui.masks[funcName](comp);
+
+                            attr.removeNamedItem('mask');
+                        }
+
+                        if (crtlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
+
+                        crtlModel.__sui__[prop.value].setElement(comp);
+
+                        (function (senderModel, propertyName) {
+                            Object.defineProperty(senderModel, propertyName, {
+                                get: function () {
+                                    return this.__sui__[propertyName].get();
+                                }
+                                , set: function (v) {
+                                    return this.__sui__[propertyName].set(v);
+                                }
+                            });
+                        })(crtlModel, propName);
+
+                        if (tabIndex != null && nextTabIndex != null) {
+                            crtlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
+
+                            attr.removeNamedItem('nextTabIndex');
+                            attr.removeNamedItem('tabIndex');
+                        }
                     }
                     else {
+                        comp.__sui__.setSettings(elementComp.innerHTML);
+
+                        var oPropertyArrayModel = new propertyArrayModel(crtlModel, propName);
+                        var oClassArray = new classArray(oPropertyArrayModel);
+
+                        crtlModel[propName] = oClassArray;
+
+                        crtlModel.$func[propName] = new funcPropertyArrayModel(oPropertyArrayModel);
+
+                        if (crtlModel[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
+
+                        oPropertyArrayModel.setElement(comp);
+
+                        (function (sender, propertyName) {
+                            Object.defineProperty(sender, propertyName, {
+                                get: function () {
+                                    return this.__sui__.getSource();
+                                }
+                                , set: function (v) {
+                                    return this.__sui__.setSource(v);
+                                }
+                            });
+                        })(oClassArray, "source");
+
+                        if (tabIndex != null && nextTabIndex != null) {
+                            oPropertyArrayModel.setTabIndex(tabIndex.value, nextTabIndex.value);
+
+                            attr.removeNamedItem('nextTabIndex');
+                            attr.removeNamedItem('tabIndex');
+                        }
                     }
 
                     crtlModel.__sui__.$components.items.push(comp);
-
-                    if (mask != null) {
-                        funcName = findFunction($sui.masks, mask.value);
-
-                        if (funcName == null) { throw 'This mask name not exists [' + mask.value + ']'; }
-
-                        $sui.masks[funcName](comp);
-
-                        attr.removeNamedItem('mask');
-                    }
-
-                    var objModel = crtlModel.__sui__;
-
-                    if (objModel[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
-
-                    objModel[prop.value].setElement(comp);
-
-                    (function (senderModel, propertyName) {
-                        Object.defineProperty(senderModel, propertyName, {
-                            get: function () {
-                                return this.__sui__[propertyName].get();
-                            }
-                            , set: function (v) {
-                                return this.__sui__[propertyName].set(v);
-                            }
-                        });
-                    })(crtlModel, propName);
-
-                    crtlModel.$func[propName] = new funcPropertyModel(objModel[prop.value]);
-
-                    if (tabIndex != null && nextTabIndex != null) {
-                        objModel[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
-
-                        attr.removeNamedItem('nextTabIndex');
-                        attr.removeNamedItem('tabIndex');
-                    }
 
                     attr.removeNamedItem('prop');
                     attr.removeNamedItem('sui-comp');
