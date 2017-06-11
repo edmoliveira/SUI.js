@@ -23,7 +23,11 @@
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
             </p>
             <tt sui-comp="repeater" prop="children">
-                <div>$sui.index</div>
+                <div >
+                    <div style="display:inline-block">Nome:&nbsp;</div>
+                     
+                    <div style="display:inline-block">$sui.index </div>
+                </div>
             </tt>
         </div>
 
@@ -40,7 +44,14 @@
             $model.firstName = 'Edson';
             $model.lastName = 'Mendes de Oliveira';
             $model.wifeName = 'Eliane F. Dos Santos';
-            $model.children.source = ['filho1', 'filho2', 'filho3'];
+
+            var collection = [];
+
+            for (var index = 0; index < 10000; index++) {
+                collection.push('filho' + index);
+            }
+
+            $model.children.source = collection;
 
             $control.checkForm = function () {
 

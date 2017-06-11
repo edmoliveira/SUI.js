@@ -141,7 +141,7 @@ $sui.components = {
 
         function drawSource() {
             el.innerHTML = '';
-
+            
             sourceArray.forEach(function (item, index) {
                 var content = settings;
 
@@ -156,14 +156,40 @@ $sui.components = {
 
                     }
                 }
-
-                var parser = new DOMParser();
-                var xml = parser.parseFromString(content, "text/xml");
                 
-                for (var iChild = 0; iChild < xml.childNodes.length; iChild++) {
-                    el.appendChild(xml.childNodes[iChild]); 
+                var parser = new DOMParser();
+                var htmlCollection = parser.parseFromString(content, "text/html").all;
+                
+                var iChild = 0;
+                
+                while(iChild < htmlCollection.length)
+                {
+                    if(filterTagHtml(htmlCollection[iChild].tagName))
+                    {
+                        el.appendChild(htmlCollection[iChild]);
+                    }
+                    else
+                    {
+                        iChild++;
+                    }
                 }
             });
+        }
+
+        function filterTagHtml(tagName)
+        {
+            if(tagName.toLowerCase() != "html"
+                && tagName.toLowerCase() != 'body'
+                && tagName.toLowerCase() != 'head'
+                && tagName.toLowerCase() != 'script'
+                && tagName.toLowerCase() != 'style')
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         return el;
