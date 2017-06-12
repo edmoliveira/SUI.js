@@ -10,7 +10,7 @@
                 Type your:
             </p>
             <p>
-                First Name: <tt sui-comp = "text" prop="firstName" mask="time" tabIndex="0" nextTabIndex="1"></tt>
+                First Name: <tt sui-comp = "text" prop="firstName" mask="time" tabIndex="0" nextTabIndex="1" ></tt>
             </p>
             <p>
                 Last Name: <tt sui-comp = "text" prop="lastName" mask="time" tabIndex="1" nextTabIndex="2"></tt>
@@ -23,7 +23,7 @@
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
             </p>
             <p>
-                <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="0">
+                <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="4">
                     Father Name: <tt sui-comp-1 = "text" prop="fatherName" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
                     Mother Name: <tt sui-comp-1 = "text" prop="motherName" tabIndex="1" nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
                     <br /><br />
@@ -37,22 +37,23 @@
                     </div>
                 </div>
             </p>
-<!--            <tt sui-comp="repeater" prop="children">
-                <div >
-                    <div style="display:inline-block">Nome:&nbsp;</div>
-                     
-                    <div style="display:inline-block">$sui.index </div>
+            <p></p>
+            <tt sui-comp="repeater" prop="friends" tabIndex="4" nextTabIndex="0">
+                <div>
+                    Name: <tt sui-comp-1 = "text" prop="name" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                    Description: <tt sui-comp-1 = "text" prop="description" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
+                    <br /><br />
+                    <h1 sui-value-1="Friend: $sui.name [$sui.description]" ></h1>
                 </div>
-            </tt>-->
+            </tt>
         </div>
 
         <div sui-form="searchuser">
-            
+
         </div>
     </body>
 </html>
 <script>
-
 
     $sui.ready(function () {
         $sui.loadControl('caduser', function ($control, $model, $func) {
@@ -66,17 +67,17 @@
             $model.parents.children.firstChild = 'Cristiane Mendes de Oliveira'
             $model.parents.children.secondChild = 'Eduardo Mendes de Oliveira'
 
-//            var collection = [];
-
-//            for (var index = 0; index < 1000; index++) {
-//                collection.push('filho' + index);
-//            }
-
-//            $model.children.source = collection;
-
-            $control.checkForm = function () {
-
+            $control.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
+                return true;
             }
+
+            //            var collection = [];
+
+            //            for (var index = 0; index < 1000; index++) {
+            //                collection.push('filho' + index);
+            //            }
+
+            //            $model.children.source = collection;
 
             $func.firstName.focus();
         });

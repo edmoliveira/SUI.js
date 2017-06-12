@@ -26,20 +26,34 @@ $sui.loadControl = function (selector, action) {
         var elementSuiForm = elementCollection[0];
 
         function formSuiJS(parentElement) {
-            var crtlModel = new Object();
+            var self = this;
 
-            this.___getprotoM = function () {
-                return crtlModel;
+            var ctrlModel = new Object();
+            var changePropertyArray = [];
+
+            this.__sui__ = new Object();
+
+            this.__sui__.$getprotoM = function () {
+                return ctrlModel;
             }
 
-            this.checkForm = null;
+            this.onChangeProperty = null;
 
-            searchComponents(parentElement, crtlModel, 0);
+            this.__sui__.$triggerChangePropertyArray = function (sender, propertyName, oldValue, newValue) {
+                if (self.onChangeProperty != null) {
+                    return self.onChangeProperty(sender, propertyName, oldValue, newValue);
+                }
+                else {
+                    return true;
+                }
+            };
+
+            searchComponents(parentElement, ctrlModel, 0);
         }
 
-        Object.defineProperty(formSuiJS.prototype, "Model", {
+        Object.defineProperty(formSuiJS.prototype, "$model", {
             get: function () {
-                return this.___getprotoM();
+                return this.__sui__.$getprotoM();
             }
         });
 
@@ -48,24 +62,25 @@ $sui.loadControl = function (selector, action) {
         if (action != null) {
             oFormSuiJS = new formSuiJS(elementSuiForm);
 
-            action(oFormSuiJS, oFormSuiJS.Model, oFormSuiJS.Model.$func);
+            action(oFormSuiJS, oFormSuiJS.$model, oFormSuiJS.$model.$func);
         }
 
-        function searchComponents(parentElement, crtlModel, level) {
+        function searchComponents(parentElement, ctrlModel, level, parentCtrlModel) {
             var posLevel = '';
 
             if (level > 0) {
                 posLevel = '-' + level;
             }
 
-            crtlModel.__sui__ = new Object();
+            ctrlModel.__sui__ = new Object();
+            ctrlModel.__sui__.parentCtrlModel = parentCtrlModel;
 
-            crtlModel.$func = new Object();
-            crtlModel.$func.__sui__ = crtlModel.__sui__;
+            ctrlModel.$func = new Object();
+            ctrlModel.$func.__sui__ = ctrlModel.__sui__;
 
-            crtlModel.__sui__.$components = new Object();
-            crtlModel.__sui__.$components.items = [];
-            crtlModel.__sui__.$components.moveFocus = function (tabIndex) {
+            ctrlModel.__sui__.$components = new Object();
+            ctrlModel.__sui__.$components.items = [];
+            ctrlModel.__sui__.$components.moveFocus = function (tabIndex) {
                 for (var index = 0; index < this.items.length; index++) {
                     if (this.items[index].tabIndex == $sui.func.textToInt(tabIndex)) {
                         this.items[index].__sui__.setFocus();
@@ -87,6 +102,8 @@ $sui.loadControl = function (selector, action) {
                 if (type != null && prop != null) {
                     var propName = prop.value;
 
+                    if (ctrlModel.__sui__[propName] != undefined) { throw 'This property already exists [' + propName + '][' + selector + ']'; }
+
                     var mask = attr.getNamedItem('mask');
                     var tabIndex = attr.getNamedItem('tabIndex');
                     var nextTabIndex = attr.getNamedItem('nextTabIndex');
@@ -100,9 +117,11 @@ $sui.loadControl = function (selector, action) {
                     var comp = $sui.components[funcName]();
 
                     if (comp.__sui__.objectType() == OBJECT_TYPE.VALUE_TYPE) {
-                        crtlModel.__sui__[propName] = new propertyModel(crtlModel, propName);
+                        var opropertyModel = new propertyModel(ctrlModel, propName);
 
-                        crtlModel.$func[propName] = new funcPropertyModel(crtlModel.__sui__[prop.value]);
+                        ctrlModel.__sui__[propName] = opropertyModel;
+
+                        ctrlModel.$func[propName] = new funcPropertyModel(ctrlModel.__sui__[prop.value]);
 
                         if (mask != null) {
                             funcName = findFunction($sui.masks, mask.value);
@@ -114,9 +133,9 @@ $sui.loadControl = function (selector, action) {
                             attr.removeNamedItem('mask');
                         }
 
-                        if (crtlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
+                        if (ctrlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
 
-                        crtlModel.__sui__[prop.value].setElement(comp);
+                        ctrlModel.__sui__[prop.value].setElement(comp);
 
                         (function (senderModel, propertyName) {
                             Object.defineProperty(senderModel, propertyName, {
@@ -124,19 +143,19 @@ $sui.loadControl = function (selector, action) {
                                     return this.__sui__[propertyName].get();
                                 }
                                 , set: function (v) {
-                                    return this.__sui__[propertyName].set(v);
+                                    this.__sui__[propertyName].set(v);
                                 }
                             });
-                        })(crtlModel, propName);
+                        })(ctrlModel, propName);
 
                         if (tabIndex != null && nextTabIndex != null) {
-                            crtlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
+                            ctrlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
 
                             attr.removeNamedItem('nextTabIndex');
                             attr.removeNamedItem('tabIndex');
                         }
 
-                        crtlModel.__sui__.$components.items.push(comp);
+                        ctrlModel.__sui__.$components.items.push(comp);
 
                         attr.removeNamedItem('prop');
                         attr.removeNamedItem('sui-comp' + posLevel);
@@ -149,17 +168,19 @@ $sui.loadControl = function (selector, action) {
                         }
 
                         elementComp.parentNode.replaceChild(comp, elementComp);
+
+                        opropertyModel.addEvents();
                     }
                     else if (comp.__sui__.objectType() == OBJECT_TYPE.REFERENCE_TYPE) {
                         if (comp.__sui__.isElementNull) { comp = $sui.components[funcName](elementComp); }
 
-                        crtlModel.__sui__[propName] = new propertyRefModel(crtlModel, propName);
+                        ctrlModel.__sui__[propName] = new propertyRefModel(ctrlModel, propName);
 
-                        crtlModel.$func[propName] = new funcPropertyRefModel(crtlModel.__sui__[prop.value]);
+                        ctrlModel.$func[propName] = new funcPropertyRefModel(ctrlModel.__sui__[prop.value]);
 
-                        if (crtlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
+                        if (ctrlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
 
-                        crtlModel.__sui__[prop.value].setElement(comp);
+                        ctrlModel.__sui__[prop.value].setElement(comp);
 
                         (function (senderModel, propertyName) {
                             Object.defineProperty(senderModel, propertyName, {
@@ -167,18 +188,18 @@ $sui.loadControl = function (selector, action) {
                                     return this.__sui__[propertyName].get();
                                 }
                                 , set: function (v) {
-                                    return this.__sui__[propertyName].set(v);
+                                    this.__sui__[propertyName].set(v);
                                 }
                             });
-                        })(crtlModel, propName);
+                        })(ctrlModel, propName);
 
                         if (tabIndex != null && nextTabIndex != null) {
-                            crtlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
+                            ctrlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
 
                             attr.removeNamedItem('nextTabIndex');
                         }
 
-                        crtlModel.__sui__.$components.items.push(comp);
+                        ctrlModel.__sui__.$components.items.push(comp);
 
                         attr.removeNamedItem('prop');
                         attr.removeNamedItem('sui-comp' + posLevel);
@@ -190,10 +211,10 @@ $sui.loadControl = function (selector, action) {
                             comp.setAttributeNode(elAttribute);
                         }
 
-                        var componentChildren = searchComponents(comp, crtlModel[propName], level + 1);
+                        var componentChildren = searchComponents(comp, ctrlModel[propName], level + 1, ctrlModel);
 
                         if (componentChildren.length > 0) {
-                            crtlModel.__sui__[propName].settings(componentChildren[0], componentChildren[componentChildren.length - 1]);
+                            ctrlModel.__sui__[propName].settings(componentChildren[0], componentChildren[componentChildren.length - 1]);
                         }
                     }
                 }
@@ -211,12 +232,12 @@ $sui.loadControl = function (selector, action) {
                 return name;
             }
 
-            searchLegends(parentElement, crtlModel, level);
+            searchLegends(parentElement, ctrlModel, level);
 
-            return crtlModel.__sui__.$components.items;
+            return ctrlModel.__sui__.$components.items;
         }
 
-        function searchLegends(parentElement, crtlModel, level) {
+        function searchLegends(parentElement, ctrlModel, level) {
             var posLevel = '';
 
             if (level > 0) {
@@ -240,9 +261,9 @@ $sui.loadControl = function (selector, action) {
                 while ((result = reg.exec(value)) != null) {
                     var propName = result[0].replace('$sui.', '');
 
-                    if (crtlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + '][' + parentElement.innerHTML + ']'; }
+                    if (ctrlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + '][' + parentElement.innerHTML + ']'; }
 
-                    var property = crtlModel.__sui__[propName];
+                    var property = ctrlModel.__sui__[propName];
 
                     (function (element, text, objProp) {
                         objProp.onChangeValue.push(function () {
@@ -290,7 +311,7 @@ $sui.loadControl = function (selector, action) {
             }
         }
 
-        function propertyModel(crtlModel, prop) {
+        function propertyModel(ctrlModel, prop) {
             var self = this;
 
             var el = null;
@@ -301,14 +322,21 @@ $sui.loadControl = function (selector, action) {
 
             this.setElement = function (elem) {
                 el = elem;
+
+                el.__sui__.valueChanged.push(function (obj) {
+                    self.onChangeValue.forEach(function (item, index) {
+                        item(obj);
+                    });
+                });
+            }
+
+            this.addEvents = function () {
                 $sui.func.addEvent('change', el, function () {
-                    if (crtlModel.onChangeProperty != null) {
-                        if (crtlModel.onChangeProperty(crtlModel, self.propertyName, this.__sui__.getOldValue(), this.__sui__.getValue())) {
-                            this.__sui__.setValue(this.value);
-                        }
+                    if (oFormSuiJS.__sui__.$triggerChangePropertyArray(ctrlModel, self.propertyName, this.__sui__.getValue(), this.__sui__.getNewValue())) {
+                        this.__sui__.setValue(this.__sui__.getNewValue());
                     }
                     else {
-                        this.__sui__.setValue(this.value);
+                        this.__sui__.setValue(this.__sui__.getValue());
                     }
                 });
 
@@ -318,14 +346,8 @@ $sui.loadControl = function (selector, action) {
                     if (key == 9) {
                         e.preventDefault();
 
-                        crtlModel.__sui__.$components.moveFocus(ntTbIn);
+                        ctrlModel.__sui__.$components.moveFocus(ntTbIn);
                     }
-                });
-
-                el.__sui__.valueChanged.push(function (obj) {
-                    self.onChangeValue.forEach(function (item, index) {
-                        item(obj);
-                    });
                 });
             }
 
@@ -373,7 +395,7 @@ $sui.loadControl = function (selector, action) {
             }
         }
 
-        function propertyRefModel(crtlModel, prop) {
+        function propertyRefModel(ctrlModel, prop) {
             var self = this;
 
             var firstComponent = null;
@@ -428,14 +450,14 @@ $sui.loadControl = function (selector, action) {
                 firstComponent = fComp;
                 lastComponent = lComp;
 
-                if (lastComponent != null) {
+                if (lastComponent != null && lastComponent.__sui__.objectType() != OBJECT_TYPE.REFERENCE_TYPE) {
                     $sui.func.addEvent('keydown', lastComponent, function (e) {
                         var key = e.charCode || e.keyCode || 0;
 
                         if (key == 9) {
                             e.preventDefault();
 
-                            crtlModel.__sui__.$components.moveFocus(ntTbIn);
+                            ctrlModel.__sui__.$components.moveFocus(ntTbIn);
                         }
                     });
                 }
@@ -449,6 +471,7 @@ $sui.loadControl = function (selector, action) {
 $sui.components = {
     createText: function () {
         var el = document.createElement('INPUT');
+        var valueOf = null;
 
         el.type = 'text';
         el.__sui__ = new Object();
@@ -457,21 +480,27 @@ $sui.components = {
             return OBJECT_TYPE.VALUE_TYPE;
         }
 
-        el.__sui__.getValue = function () {
+        el.__sui__.getNewValue = function () {
             return el.value;
         }
 
+        el.__sui__.getValue = function () {
+            return valueOf;
+        }
+
         el.__sui__.setValue = function (v) {
+            valueOf = v;
             el.value = v;
 
             triggerValueChanged();
         }
 
         el.__sui__.getValueNoMask = function () {
-            return el.value;
+            return valueOf;
         }
 
         el.__sui__.setValueNoMask = function (v) {
+            valueOf = v;
             el.value = v;
 
             triggerValueChanged();
