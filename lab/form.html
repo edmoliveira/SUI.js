@@ -16,19 +16,34 @@
                 Last Name: <tt sui-comp = "text" prop="lastName" mask="time" tabIndex="1" nextTabIndex="2"></tt>
             </p>
             <p>
-                Wife Name: <tt sui-comp = "text" prop="wifeName" mask="time" tabIndex="2" nextTabIndex="0"></tt>
+                Wife Name: <tt sui-comp = "text" prop="wifeName" mask="time" tabIndex="2" nextTabIndex="3"></tt>
             </p>
             <p>
                 <h1 sui-value="Your Name: $sui.firstName $sui.lastName" ></h1>
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
             </p>
-            <tt sui-comp="repeater" prop="children">
+            <p>
+                <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="0">
+                    Father Name: <tt sui-comp-1 = "text" prop="fatherName" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                    Mother Name: <tt sui-comp-1 = "text" prop="motherName" tabIndex="1" nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
+                    <br /><br />
+                    <h1 sui-value-1="Parents: $sui.fatherName and $sui.motherName" ></h1>
+                    <br /><br />
+                    <div sui-comp-1="custom" prop="children" tabIndex="2" nextTabIndex="0">
+                        First Child: <tt sui-comp-2 = "text" prop="firstChild" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                        Second Child: <tt sui-comp-2 = "text" prop="secondChild" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
+                        <br /><br />
+                        <h1 sui-value-2="Children: $sui.firstChild and $sui.secondChild" ></h1>
+                    </div>
+                </div>
+            </p>
+<!--            <tt sui-comp="repeater" prop="children">
                 <div >
                     <div style="display:inline-block">Nome:&nbsp;</div>
                      
                     <div style="display:inline-block">$sui.index </div>
                 </div>
-            </tt>
+            </tt>-->
         </div>
 
         <div sui-form="searchuser">
@@ -45,13 +60,19 @@
             $model.lastName = 'Mendes de Oliveira';
             $model.wifeName = 'Eliane F. Dos Santos';
 
-            var collection = [];
+            $model.parents.fatherName = 'Agostinho Soares de Oliveira'
+            $model.parents.motherName = 'Solange Mendes de Oliveira'
 
-            for (var index = 0; index < 10000; index++) {
-                collection.push('filho' + index);
-            }
+            $model.parents.children.firstChild = 'Cristiane Mendes de Oliveira'
+            $model.parents.children.secondChild = 'Eduardo Mendes de Oliveira'
 
-            $model.children.source = collection;
+//            var collection = [];
+
+//            for (var index = 0; index < 1000; index++) {
+//                collection.push('filho' + index);
+//            }
+
+//            $model.children.source = collection;
 
             $control.checkForm = function () {
 
