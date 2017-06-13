@@ -3,6 +3,30 @@
         <title>Form SUI.js</title>
         <script src="suiJS.js"></script>
         <script src="suiJS.extends.js"></script>
+        <style>
+            .repeater
+            {
+                border:1px solid blue;
+                width:350px;
+                height:400px;
+                overflow-y:auto;
+            }
+                
+            .repeater > div
+            {
+                border-bottom: 1px solid blue;
+            }
+            
+            .repeater > div:nth-child(even)
+            {
+                background-color:#cccccc;
+            }                       
+            
+            .repeater > div:last-child
+            {
+                border-bottom: 0px solid blue;
+            }            
+        </style>
     </head>
     <body>
         <div sui-form="caduser">
@@ -19,7 +43,7 @@
                 Wife Name: <tt sui-comp = "text" prop="wifeName" mask="time" tabIndex="2" nextTabIndex="3"></tt>
             </p>
             <p>
-                <h1 sui-value="Your Name: $sui.firstName $sui.lastName" ></h1>
+                <h1 sui-value="$sui.legendYourName $sui.firstName $sui.lastName" ></h1>
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
             </p>
             <p>
@@ -37,14 +61,20 @@
                     </div>
                 </div>
             </p>
-            <p></p>
-            <tt sui-comp="repeater" prop="friends" tabIndex="4" nextTabIndex="0">
+<!--            <p></p>
+            <tt sui-comp="repeater" prop="friends" tabIndex="4" nextTabIndex="5">
                 <div>
                     Name: <tt sui-comp-1 = "text" prop="name" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
                     Description: <tt sui-comp-1 = "text" prop="description" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
                     <br /><br />
                     <h1 sui-value-1="Friend: $sui.name [$sui.description]" ></h1>
                 </div>
+            </tt>-->
+            <p></p>
+            <tt sui-comp="repeater" prop="team" tabIndex="5" nextTabIndex="0" class="repeater">
+                <label sui-value-1="$sui.id" style="display:none"></label>
+                <label sui-value-1="$sui.playerName:"></label> &nbsp;
+                <label sui-value-1="$sui.playerPosition"></label>
             </tt>
         </div>
 
@@ -54,9 +84,9 @@
     </body>
 </html>
 <script>
-
     $sui.ready(function () {
         $sui.loadControl('caduser', function ($control, $model, $func) {
+            $model.legendYourName = 'Your Name:';
             $model.firstName = 'Edson';
             $model.lastName = 'Mendes de Oliveira';
             $model.wifeName = 'Eliane F. Dos Santos';
@@ -67,17 +97,31 @@
             $model.parents.children.firstChild = 'Cristiane Mendes de Oliveira'
             $model.parents.children.secondChild = 'Eduardo Mendes de Oliveira'
 
+            var collection = [];
+            var positionName = ['Armador', 'Ala-armador', 'Ala', 'Ala-pivo', 'Pivo'];
+            var iPosition = 0;
+
+            for (var index = 0; index < 1000; index++) {
+                var mdl = $model.team.createItem();
+
+                mdl.id = index;
+                mdl.playerName = 'Jogador ' + index;
+                mdl.playerPosition = positionName[iPosition];
+
+                $model.team.add(mdl);
+
+                iPosition++;
+
+                if (iPosition > 4) { iPosition = 0; }
+            }
+
+            $model.team.update(function (item) { return item.id == '1' }, function (item) {
+                item.playerName = "Jogador *";
+            });
+
             $control.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
                 return true;
             }
-
-            //            var collection = [];
-
-            //            for (var index = 0; index < 1000; index++) {
-            //                collection.push('filho' + index);
-            //            }
-
-            //            $model.children.source = collection;
 
             $func.firstName.focus();
         });

@@ -17,12 +17,12 @@ Array.prototype.lastOrDefault = function () {
     }
 }
 
-Array.prototype.where = function (action) {
+Array.prototype.where = function (predicate) {
     var array = [];
 
-    if (action != null) {
+    if (predicate != null) {
         for (var index = 0; index < this.length; index++) {
-            if (action(this[index])) {
+            if (predicate(this[index])) {
                 array.push(this[index]);
             }
         }

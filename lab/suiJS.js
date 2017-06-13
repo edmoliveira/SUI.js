@@ -3,6 +3,7 @@
 var OBJECT_TYPE = {
     VALUE_TYPE: 0
     , REFERENCE_TYPE: 1
+    , ARRAY_TYPE: 2
 };
 
 function $sui() {
@@ -121,7 +122,7 @@ $sui.loadControl = function (selector, action) {
 
                         ctrlModel.__sui__[propName] = opropertyModel;
 
-                        ctrlModel.$func[propName] = new funcPropertyModel(ctrlModel.__sui__[prop.value]);
+                        ctrlModel.$func[propName] = new funcPropertyModel(ctrlModel.__sui__[propName]);
 
                         if (mask != null) {
                             funcName = findFunction($sui.masks, mask.value);
@@ -133,20 +134,9 @@ $sui.loadControl = function (selector, action) {
                             attr.removeNamedItem('mask');
                         }
 
-                        if (ctrlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
-
                         ctrlModel.__sui__[prop.value].setElement(comp);
 
-                        (function (senderModel, propertyName) {
-                            Object.defineProperty(senderModel, propertyName, {
-                                get: function () {
-                                    return this.__sui__[propertyName].get();
-                                }
-                                , set: function (v) {
-                                    this.__sui__[propertyName].set(v);
-                                }
-                            });
-                        })(ctrlModel, propName);
+                        createProperty(ctrlModel, propName);
 
                         if (tabIndex != null && nextTabIndex != null) {
                             ctrlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
@@ -176,22 +166,11 @@ $sui.loadControl = function (selector, action) {
 
                         ctrlModel.__sui__[propName] = new propertyRefModel(ctrlModel, propName);
 
-                        ctrlModel.$func[propName] = new funcPropertyRefModel(ctrlModel.__sui__[prop.value]);
-
-                        if (ctrlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + ']'; }
+                        ctrlModel.$func[propName] = new funcPropertyRefModel(ctrlModel.__sui__[propName]);
 
                         ctrlModel.__sui__[prop.value].setElement(comp);
 
-                        (function (senderModel, propertyName) {
-                            Object.defineProperty(senderModel, propertyName, {
-                                get: function () {
-                                    return this.__sui__[propertyName].get();
-                                }
-                                , set: function (v) {
-                                    this.__sui__[propertyName].set(v);
-                                }
-                            });
-                        })(ctrlModel, propName);
+                        createProperty(ctrlModel, propName);
 
                         if (tabIndex != null && nextTabIndex != null) {
                             ctrlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
@@ -217,19 +196,39 @@ $sui.loadControl = function (selector, action) {
                             ctrlModel.__sui__[propName].settings(componentChildren[0], componentChildren[componentChildren.length - 1]);
                         }
                     }
-                }
-            }
+                    else if (comp.__sui__.objectType() == OBJECT_TYPE.ARRAY_TYPE) {
+                        var opropertyModel = new propertyArrayModel(ctrlModel, propName);
 
-            function findFunction(obj, functionName) {
-                var name = null;
+                        ctrlModel.__sui__[propName] = opropertyModel;
 
-                for (var item in obj) {
-                    if (typeof obj[item] == "function" && item.toLowerCase() == functionName.toLowerCase()) {
-                        name = item;
+                        ctrlModel.$func[propName] = new funcPropertyArrayModel(ctrlModel.__sui__[propName]);
+
+                        ctrlModel.__sui__[prop.value].setElement(comp, elementComp.innerHTML);
+
+                        createProperty(ctrlModel, propName);
+
+                        if (tabIndex != null && nextTabIndex != null) {
+                            ctrlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
+
+                            attr.removeNamedItem('nextTabIndex');
+                            attr.removeNamedItem('tabIndex');
+                        }
+
+                        ctrlModel.__sui__.$components.items.push(comp);
+
+                        attr.removeNamedItem('prop');
+                        attr.removeNamedItem('sui-comp' + posLevel);
+
+                        for (var iAttr = 0; iAttr < attr.length; iAttr++) {
+                            var elAttribute = document.createAttribute(attr[iAttr].name);
+                            elAttribute.value = attr[iAttr].value;
+
+                            comp.setAttributeNode(elAttribute);
+                        }
+
+                        elementComp.parentNode.replaceChild(comp, elementComp);
                     }
                 }
-
-                return name;
             }
 
             searchLegends(parentElement, ctrlModel, level);
@@ -261,7 +260,14 @@ $sui.loadControl = function (selector, action) {
                 while ((result = reg.exec(value)) != null) {
                     var propName = result[0].replace('$sui.', '');
 
-                    if (ctrlModel.__sui__[propName] == undefined) { throw 'This property not exists [' + propName + '][' + parentElement.innerHTML + ']'; }
+                    if (ctrlModel.__sui__[propName] == undefined) {
+
+                        var oPropertyReadOnlyModel = new propertyReadOnlyModel(ctrlModel, propName);
+
+                        ctrlModel.__sui__[propName] = oPropertyReadOnlyModel;
+
+                        createProperty(ctrlModel, propName);
+                    }
 
                     var property = ctrlModel.__sui__[propName];
 
@@ -279,18 +285,69 @@ $sui.loadControl = function (selector, action) {
 
                 legendCollection[index].removeAttribute('sui-value' + posLevel);
             }
+        }
 
-            function fillLegendValue(element, text) {
-                for (var iProp = 0; iProp < element.__sui__.properties.length; iProp++) {
-                    var item = element.__sui__.properties[iProp];
-
-                    var code = '$sui.' + item.propertyName;
-
-                    text = text.replace(code, item.get());
+        function createProperty(senderModel, propertyName) {
+            Object.defineProperty(senderModel, propertyName, {
+                get: function () {
+                    return this.__sui__[propertyName].get();
                 }
+                , set: function (v) {
+                    this.__sui__[propertyName].set(v);
+                }
+            });
+        }
 
-                element.innerHTML = text;
+        function findFunction(obj, functionName) {
+            var name = null;
+
+            for (var item in obj) {
+                if (typeof obj[item] == "function" && item.toLowerCase() == functionName.toLowerCase()) {
+                    name = item;
+                }
             }
+
+            return name;
+        }
+
+        function fillLegendValue(element, text) {
+            for (var iProp = 0; iProp < element.__sui__.properties.length; iProp++) {
+                var item = element.__sui__.properties[iProp];
+
+                var code = '$sui.' + item.propertyName;
+
+                var value = item.get();
+
+                text = text.replace(code, value == null ? '' : value);
+            }
+
+            element.innerHTML = text;
+        }
+
+        function propertyReadOnlyModel(ctrlModel, prop) {
+            var self = this;
+
+            var value = null;
+
+            this.propertyName = prop;
+
+            this.setElement = function (elem) {
+                el = elem;
+            }
+
+            this.get = function () {
+                return value;
+            }
+
+            this.set = function (v) {
+                value = v;
+
+                self.onChangeValue.forEach(function (item, index) {
+                    item(value);
+                });
+            }
+
+            this.onChangeValue = [];
         }
 
         function funcPropertyModel(propertyModel) {
@@ -465,6 +522,122 @@ $sui.loadControl = function (selector, action) {
 
             this.onChangeValue = [];
         }
+
+        function funcPropertyArrayModel(propertyArrayModel) {
+            this.changeNextTabIndex = function (newNextTabIndex) {
+                propertyArrayModel.changeNextTabIndex(newNextTabIndex);
+            }
+
+            this.focus = function () {
+                propertyArrayModel.focus();
+            }
+        }
+
+        function propertyArrayModel(ctrlModel, prop) {
+            var self = this;
+
+            var el = null;
+            var tbIn = 0;
+            var ntTbIn = 0;
+
+            var elementModel = null;
+            var oArrayClass = null;
+
+            this.propertyName = prop;
+
+            this.get = function () {
+                return oArrayClass;
+            }
+
+            this.set = function (v) {
+                throw 'This property is read only'
+            }
+
+            this.setElement = function (elem, innerHTML) {
+                el = elem;
+
+                oArrayClass = new arrayClass(elem);
+
+                elementModel = document.createElement('DIV');
+
+                elementModel.innerHTML = innerHTML;
+
+                el.__sui__.createModel = function () {
+                    var newModel = new Object();
+
+                    var parentElement = document.createElement('tt');
+
+                    var elementDiv = elementModel.cloneNode(true);
+
+                    parentElement.appendChild(elementDiv);
+
+                    searchComponents(parentElement, newModel, 1, ctrlModel);
+
+                    parentElement.removeChild(elementDiv);
+
+                    newModel.__sui__.element = elementDiv;
+
+                    return newModel;
+                }
+
+                el.__sui__.getElementOfModel = function (itemModel) {
+                    return itemModel.__sui__.element;
+                }
+
+                el.__sui__.valueChanged.push(function (obj) {
+                    self.onChangeValue.forEach(function (item, index) {
+                        item(obj);
+                    });
+                });
+            }
+
+            this.focus = function () {
+                el.__sui__.setFocus();
+            }
+
+            this.setTabIndex = function (tabIndex, nextTabIndex) {
+                el.__sui__.setTabIndex(tabIndex);
+
+                tbIn = tabIndex;
+                ntTbIn = nextTabIndex;
+            }
+
+            this.changeNextTabIndex = function (newNextTabIndex) {
+                ntTbIn = newNextTabIndex;
+            }
+
+            function arrayClass(elementArray) {
+                this.createItem = function () {
+                    return elementArray.__sui__.createItem();
+                }
+
+                this.add = function (item) {
+                    elementArray.__sui__.add(item);
+                }
+
+                this.get = function (index) {
+                    return elementArray.__sui__.get();
+                }
+
+                this.removeAt = function (index) {
+                    elementArray.__sui__.removeAt(item);
+                }
+
+                this.remove = function (predicate) {
+                    elementArray.__sui__.remove(predicate);
+                }
+
+                this.where = function (predicate) {
+                    return elementArray.__sui__.where(predicate);
+                }
+
+                this.update = function (predicate, result) {
+                    elementArray.__sui__.update(predicate, result);
+                }
+            }
+
+            this.onChangeValue = [];
+        }
     }
 }
 
@@ -520,6 +693,129 @@ $sui.components = {
             if (el.__sui__.valueChanged.length) {
                 el.__sui__.valueChanged.forEach(function (item, index) {
                     item({ value: el.value, valueNoMask: el.value });
+                });
+            }
+        }
+
+        return el;
+    }
+    , createRepeater: function () {
+        var el = document.createElement('DIV');
+        var valueOf = [];
+
+        el.__sui__ = new Object();
+
+        el.__sui__.objectType = function () {
+            return OBJECT_TYPE.ARRAY_TYPE;
+        }
+
+        el.__sui__.toString = function () {
+            return valueOf.length + ' element' + (valueOf.length > 0 ? 's' : '');
+        }
+
+        el.__sui__.count = function () {
+            return valueOf.length;
+        }
+
+        el.__sui__.createItem = function () {
+            var model = el.__sui__.createModel();
+
+            model.__idm__ = new Object();
+            model.__idm__.$id = '$isok$'
+
+            return model;
+        }
+
+        el.__sui__.add = function (item) {
+            if (item.__idm__.$id != '$isok$') { throw 'Use the method createItem to create a new object'; }
+
+            valueOf.push(item);
+
+            el.appendChild(el.__sui__.getElementOfModel(item));
+
+            triggerValueChanged(item);
+        }
+
+        el.__sui__.get = function (index) {
+            return valueOf[index];
+        }
+
+        el.__sui__.removeAt = function (index) {
+            var item = valueOf[index];
+
+            valueOf.splice(index, 1);
+
+            el.removeChild(el.__sui__.getElementOfModel(item));
+
+            triggerValueChanged(item);
+        }
+
+        el.__sui__.remove = function (predicate) {
+            if (predicate != null) {
+                for (var index = valueOf.length - 1; index >= 0; index--) {
+                    if (predicate(valueOf[index])) {
+                        var item = valueOf[index];
+
+                        valueOf.splice(index, 1);
+
+                        el.removeChild(el.__sui__.getElementOfModel(item));
+
+                        triggerValueChanged(item);
+                    }
+                }
+            }
+        }
+
+        el.__sui__.where = function (predicate) {
+            var array = [];
+
+            if (predicate != null) {
+                for (var index = 0; index < valueOf.length; index++) {
+                    if (predicate(valueOf[index])) {
+                        array.push(valueOf[index]);
+                    }
+                }
+            }
+            else {
+                for (var index = 0; index < valueOf.length; index++) {
+                    array.push(valueOf[index]);
+                }
+            }
+
+            return array;
+        }
+
+        el.__sui__.update = function (predicate, result) {
+            if (predicate != null) {
+                for (var index = 0; index < valueOf.length; index++) {
+                    if (predicate(valueOf[index])) {
+                        result(valueOf[index]);
+                    }
+                }
+            }
+            else {
+                for (var index = 0; index < valueOf.length; index++) {
+                    result(valueOf[index]);
+                }
+            }
+        }
+
+        el.__sui__.setFocus = function () {
+            el.focus();
+        }
+
+        el.__sui__.setTabIndex = function (tabIndex) {
+            el.tabIndex = tabIndex;
+        }
+
+        el.__sui__.valueChanged = [];
+        el.__sui__.createModel = null;
+        el.__sui__.getElementOfModel = null;
+
+        function triggerValueChanged(itemValue) {
+            if (el.__sui__.valueChanged.length) {
+                el.__sui__.valueChanged.forEach(function (item, index) {
+                    item(itemValue);
                 });
             }
         }
