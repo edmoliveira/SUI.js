@@ -30,6 +30,14 @@
     </head>
     <body>
         <div sui-form="caduser">
+            <h1 style="font-family: Arial, Helvetica, sans-serif; color: #CC0000; font-weight: bold"
+                sui-value="$suiP.pageLegends.header">
+            </h1>
+
+            <h2 style="font-family: Arial, Helvetica, sans-serif; color: #0099FF; font-weight: bold"
+                sui-value="$sui.firstName [$suiP.parents.fatherName] [$suiP.parents.motherName]">
+            </h2>
+
             <p>
                 Type your:
             </p>
@@ -61,7 +69,7 @@
                     </div>
                 </div>
             </p>
-<!--            <p></p>
+            <p></p>
             <tt sui-comp="repeater" prop="friends" tabIndex="4" nextTabIndex="5">
                 <div>
                     Name: <tt sui-comp-1 = "text" prop="name" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
@@ -69,13 +77,19 @@
                     <br /><br />
                     <h1 sui-value-1="Friend: $sui.name [$sui.description]" ></h1>
                 </div>
-            </tt>-->
+            </tt>
             <p></p>
             <tt sui-comp="repeater" prop="team" tabIndex="5" nextTabIndex="0" class="repeater">
                 <label sui-value-1="$sui.id" style="display:none"></label>
                 <label sui-value-1="$sui.playerName:"></label> &nbsp;
                 <label sui-value-1="$sui.playerPosition"></label>
             </tt>
+
+            <div style="width:100%;text-align:center;">
+                <h3 style="font-family: Arial, Helvetica, sans-serif; color: #006666;"
+                    sui-value="$suiP.pageLegends.footer">
+                </h3>
+            </div>
         </div>
 
         <div sui-form="searchuser">
@@ -84,8 +98,13 @@
     </body>
 </html>
 <script>
+    //https://microsoft.github.io/monaco-editor/index.html
+
     $sui.ready(function () {
         $sui.loadControl('caduser', function ($control, $model, $func) {
+            $model.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
+            $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
+
             $model.legendYourName = 'Your Name:';
             $model.firstName = 'Edson';
             $model.lastName = 'Mendes de Oliveira';
@@ -118,6 +137,17 @@
             $model.team.update(function (item) { return item.id == '1' }, function (item) {
                 item.playerName = "Jogador *";
             });
+
+            var descrFriend = 'school;job;job'.split(';');
+
+            for (var index = 0; index < 3; index++) {
+                var mdl = $model.friends.createItem();
+
+                mdl.name = 'Friend ' + index;
+                mdl.description = descrFriend[index];
+
+                $model.friends.add(mdl)
+            }
 
             $control.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
                 return true;
