@@ -56,33 +56,33 @@
             </p>
             <p>
                 <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="4">
-                    Father Name: <tt sui-comp-1 = "text" prop="fatherName" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                    Mother Name: <tt sui-comp-1 = "text" prop="motherName" tabIndex="1" nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
+                    Father Name: <tt sui-comp = "text" prop="fatherName" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                    Mother Name: <tt sui-comp = "text" prop="motherName" tabIndex="1" nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
                     <br /><br />
-                    <h1 sui-value-1="Parents: $sui.fatherName and $sui.motherName" ></h1>
+                    <h1 sui-value="Parents: $sui.fatherName and $sui.motherName" ></h1>
                     <br /><br />
-                    <div sui-comp-1="custom" prop="children" tabIndex="2" nextTabIndex="0">
-                        First Child: <tt sui-comp-2 = "text" prop="firstChild" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                        Second Child: <tt sui-comp-2 = "text" prop="secondChild" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
+                    <div sui-comp="custom" prop="children" tabIndex="2" nextTabIndex="0">
+                        First Child: <tt sui-comp = "text" prop="firstChild" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                        Second Child: <tt sui-comp = "text" prop="secondChild" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
                         <br /><br />
-                        <h1 sui-value-2="Children: $sui.firstChild and $sui.secondChild" ></h1>
+                        <h1 sui-value="Children: $sui.firstChild and $sui.secondChild" ></h1>
                     </div>
                 </div>
             </p>
             <p></p>
             <tt sui-comp="repeater" prop="friends" tabIndex="4" nextTabIndex="5">
                 <div>
-                    Name: <tt sui-comp-1 = "text" prop="name" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                    Description: <tt sui-comp-1 = "text" prop="description" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
+                    Name: <tt sui-comp = "text" prop="name" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                    Description: <tt sui-comp = "text" prop="description" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
                     <br /><br />
-                    <h1 sui-value-1="Friend: $sui.name [$sui.description]" ></h1>
+                    <h1 sui-value="Friend: $sui.name [$sui.description]" ></h1>
                 </div>
             </tt>
             <p></p>
             <tt sui-comp="repeater" prop="team" tabIndex="5" nextTabIndex="0" class="repeater">
-                <label sui-value-1="$sui.id" style="display:none"></label>
-                <label sui-value-1="$sui.playerName:"></label> &nbsp;
-                <label sui-value-1="$sui.playerPosition"></label>
+                <label sui-value="$sui.id" style="display:none"></label>
+                <label sui-value="$sui.playerName:"></label> &nbsp;
+                <label sui-value="$sui.playerPosition"></label>
             </tt>
 
             <div style="width:100%;text-align:center;">
@@ -99,30 +99,6 @@
 </html>
 <script>
     //https://microsoft.github.io/monaco-editor/index.html
-    
-    //var collection = document.querySelectorAll('[sui-form]')
-
-    //for (var index = 0; index < collection.length; index++) {
-    //    var items = [];
-        
-    //    selectorElements(collection[index], items);
-
-    //    debugger
-    //}
-
-    //function selectorElements(elementParent, items) {
-    //    for (var index = 0; index < elementParent.children.length; index++) {
-    //        var suiComp = elementParent.children[index].attributes.getNamedItem('sui-comp');
-
-    //        if (suiComp != null) {
-    //            items.push(elementParent.children[index])
-    //        }
-
-    //        if (suiComp == null || (suiComp.value != 'custom' && suiComp.value != 'repeater')) {
-    //            selectorElements(elementParent.children[index], items)
-    //        }
-    //    }
-    //}
 
     $sui.ready(function () {
         $sui.loadControl('caduser', function ($control, $model, $func) {

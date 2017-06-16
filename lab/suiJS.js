@@ -64,7 +64,7 @@ if ([].forEach == undefined) {
                     };
 
                     this.__sui__.$initialize = function () {
-                        searchComponents(parentElement, ctrlModel, 0);
+                        searchComponents(parentElement, ctrlModel);
                         
                         legendsRefArray.forEach( function (item, index) {
                             searchPropertyRefLegend(ctrlModel, item);
@@ -92,13 +92,7 @@ if ([].forEach == undefined) {
                     action(oFormSuiJS, oFormSuiJS.$model, oFormSuiJS.$model.$func);
                 }
 
-                function searchComponents(parentElement, ctrlModel, level, parentCtrlModel) {
-                    var posLevel = '';
-
-                    if (level > 0) {
-                        posLevel = '-' + level;
-                    }
-
+                function searchComponents(parentElement, ctrlModel, parentCtrlModel) {
                     ctrlModel.__sui__ = new Object();
                     ctrlModel.__sui__.parentCtrlModel = parentCtrlModel;
 
@@ -116,14 +110,14 @@ if ([].forEach == undefined) {
                         }
                     }
 
-                    var compCollection = parentElement.querySelectorAll('[sui-comp' + posLevel + ']');
+                    var compCollection = querySelectorElements(parentElement, 'sui-comp');
 
                     for (var index = 0; index < compCollection.length; index++) {
                         var elementComp = compCollection[index];
 
                         var attr = elementComp.attributes;
 
-                        var type = attr.getNamedItem('sui-comp' + posLevel);
+                        var type = attr.getNamedItem('sui-comp');
                         var prop = attr.getNamedItem('prop');
 
                         if (type != null && prop != null) {
@@ -174,7 +168,7 @@ if ([].forEach == undefined) {
                                 ctrlModel.__sui__.$components.items.push(comp);
 
                                 attr.removeNamedItem('prop');
-                                attr.removeNamedItem('sui-comp' + posLevel);
+                                attr.removeNamedItem('sui-comp');
 
                                 for (var iAttr = 0; iAttr < attr.length; iAttr++) {
                                     var elAttribute = document.createAttribute(attr[iAttr].name);
@@ -188,7 +182,7 @@ if ([].forEach == undefined) {
                                 opropertyModel.addEvents();
                             }
                             else if (comp.__sui__.objectType() == OBJECT_TYPE.REFERENCE_TYPE) {
-                                if (comp.__sui__.isElementNull) { comp = $sui.components[funcName](elementComp); }
+                                if (comp.__sui__.isElementNull) { comp = $sui.components[funcName](null, elementComp); }
 
                                 ctrlModel.__sui__[propName] = new propertyRefModel(ctrlModel, propName);
 
@@ -207,7 +201,7 @@ if ([].forEach == undefined) {
                                 ctrlModel.__sui__.$components.items.push(comp);
 
                                 attr.removeNamedItem('prop');
-                                attr.removeNamedItem('sui-comp' + posLevel);
+                                attr.removeNamedItem('sui-comp');
 
                                 for (var iAttr = 0; iAttr < attr.length; iAttr++) {
                                     var elAttribute = document.createAttribute(attr[iAttr].name);
@@ -216,7 +210,7 @@ if ([].forEach == undefined) {
                                     comp.setAttributeNode(elAttribute);
                                 }
                                 
-                                var componentChildren = searchComponents(comp, ctrlModel[propName], level + 1, ctrlModel);
+                                var componentChildren = searchComponents(comp, ctrlModel[propName], ctrlModel);
 
                                 if (componentChildren.length > 0) {
                                     ctrlModel.__sui__[propName].settings(componentChildren[0], componentChildren[componentChildren.length - 1]);
@@ -243,7 +237,7 @@ if ([].forEach == undefined) {
                                 ctrlModel.__sui__.$components.items.push(comp);
 
                                 attr.removeNamedItem('prop');
-                                attr.removeNamedItem('sui-comp' + posLevel);
+                                attr.removeNamedItem('sui-comp');
 
                                 for (var iAttr = 0; iAttr < attr.length; iAttr++) {
                                     var elAttribute = document.createAttribute(attr[iAttr].name);
@@ -257,25 +251,19 @@ if ([].forEach == undefined) {
                         }
                     }
 
-                    searchLegends(parentElement, ctrlModel, level);
+                    searchLegends(parentElement, ctrlModel);
 
                     return ctrlModel.__sui__.$components.items;
                 }
 
-                function searchLegends(parentElement, ctrlModel, level) {
-                    var posLevel = '';
-
-                    if (level > 0) {
-                        posLevel = '-' + level;
-                    }
-
-                    var legendCollection = parentElement.querySelectorAll('[sui-value' + posLevel + ']');
+                function searchLegends(parentElement, ctrlModel) {
+                    var legendCollection = querySelectorElements(parentElement, 'sui-value');//parentElement.querySelectorAll('[sui-value]');
 
                     for (var index = 0; index < legendCollection.length; index++) {
                         var el = legendCollection[index];
                         var attr = legendCollection[index].attributes;
 
-                        var value = attr.getNamedItem('sui-value' + posLevel).value;
+                        var value = attr.getNamedItem('sui-value').value;
 
                         el.__sui__ = new Object();
                         el.__sui__.properties = [];
@@ -285,7 +273,40 @@ if ([].forEach == undefined) {
 
                         fillPropertyValueLegend(el, value);
 
-                        legendCollection[index].removeAttribute('sui-value' + posLevel);
+                        legendCollection[index].removeAttribute('sui-value');
+                    }
+                }
+
+                function querySelectorElements(elmPrt, attr){
+                    var buffer = [];
+
+                    searchQueSelecElements(elmPrt, buffer, attr);
+
+                    return buffer;
+                }
+
+                function searchQueSelecElements(elmPrt, buffer, attr){
+                    for (var index = 0; index < elmPrt.children.length; index++) {
+                        var itemEl = elmPrt.children[index];
+
+                        var suiComp = itemEl.attributes.getNamedItem(attr);
+                        var isSearch = true;
+
+                        if (suiComp != null) {
+                            buffer.push(itemEl);
+
+                            var funcName = findFunction($sui.components, 'create' + suiComp.value);
+
+                            if (funcName != null) {
+                                var typeObj = $sui.components[funcName](true);
+
+                                isSearch = !(typeObj == OBJECT_TYPE.REFERENCE_TYPE || typeObj == OBJECT_TYPE.ARRAY_TYPE);
+                            }
+                        }
+                            
+                        if (isSearch) {
+                            searchQueSelecElements(itemEl, buffer, attr);
+                        }
                     }
                 }
 
@@ -907,7 +928,7 @@ if ([].forEach == undefined) {
 
 			    return el;
 			}
-			, createCustom: function (element, isIni) {
+			, createCustom: function (isIni, element) {
 			    var type = OBJECT_TYPE.REFERENCE_TYPE;
 
 			    if (isIni) { return type; }
