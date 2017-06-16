@@ -719,7 +719,11 @@ if ([].forEach == undefined) {
         }
 
         this.components = {
-            createText: function () {
+            createText: function (isIni) {
+                var type = OBJECT_TYPE.VALUE_TYPE;
+
+                if (isIni) { return type; }
+
                 var el = document.createElement('INPUT');
                 var valueOf = null;
 
@@ -727,7 +731,7 @@ if ([].forEach == undefined) {
                 el.__sui__ = new Object();
 
                 el.__sui__.objectType = function () {
-                    return OBJECT_TYPE.VALUE_TYPE;
+                    return type;
                 }
 
                 el.__sui__.getNewValue = function () {
@@ -776,14 +780,18 @@ if ([].forEach == undefined) {
 
                 return el;
             }
-			, createRepeater: function () {
+			, createRepeater: function (isIni) {
+			    var type = OBJECT_TYPE.ARRAY_TYPE;
+
+			    if (isIni) { return type; }
+
 			    var el = document.createElement('DIV');
 			    var valueOf = [];
 
 			    el.__sui__ = new Object();
 
 			    el.__sui__.objectType = function () {
-			        return OBJECT_TYPE.ARRAY_TYPE;
+			        return type;
 			    }
 
 			    el.__sui__.toString = function () {
@@ -899,7 +907,11 @@ if ([].forEach == undefined) {
 
 			    return el;
 			}
-			, createCustom: function (element) {
+			, createCustom: function (element, isIni) {
+			    var type = OBJECT_TYPE.REFERENCE_TYPE;
+
+			    if (isIni) { return type; }
+
 			    var el = null;
 
 			    if (element == null) {
@@ -917,7 +929,7 @@ if ([].forEach == undefined) {
 			    el.__sui__.value = new Object();
 
 			    el.__sui__.objectType = function () {
-			        return OBJECT_TYPE.REFERENCE_TYPE;
+			        return type;
 			    }
 
 			    el.__sui__.getValue = function () {
