@@ -54,7 +54,7 @@
                 <h1 sui-value="$sui.legendYourName $sui.firstName $sui.lastName" ></h1>
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
             </p>
-            <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="4">
+            <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="4" style="border:1px solid red;">
                 Father Name: <tt sui-comp = "text" prop="fatherName" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
                 Mother Name: <tt sui-comp = "text" prop="motherName" tabIndex="1" nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
                 <br /><br />
@@ -82,7 +82,17 @@
                 <label sui-value="$sui.playerName:"></label> &nbsp;
                 <label sui-value="$sui.playerPosition"></label>
             </tt>
-
+            <p></p>
+            <div sui-comp="form" prop="contact" style="text-align:center;width:100%;">
+                <h1 sui-value="Contact: $sui.name [$sui.phone]" ></h1>
+                <p>
+                    Name: <tt sui-comp = "text" prop="name" mask="time" tabIndex="1" nextTabIndex="0" ></tt>
+                </p>  
+                <p>
+                    Phone: <tt sui-comp = "text" prop="phone" mask="time" tabIndex="0" nextTabIndex="1" ></tt>
+                </p>    
+            </div>
+            <p></p>
             <div style="width:100%;text-align:center;">
                 <h3 style="font-family: Arial, Helvetica, sans-serif; color: #006666;"
                     sui-value="$suiP.pageLegends.footer">
@@ -104,25 +114,25 @@
             $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
 
             $model.legendYourName = 'Your Name:';
-            $model.firstName = 'Edson';
-            $model.lastName = 'Mendes de Oliveira';
-            $model.wifeName = 'Eliane F. Dos Santos';
+            $model.firstName = 'George';
+            $model.lastName = 'Washington';
+            $model.wifeName = 'Martha Washington';
 
-            $model.parents.fatherName = 'Agostinho Soares de Oliveira'
-            $model.parents.motherName = 'Solange Mendes de Oliveira'
+            $model.parents.fatherName = 'Augustine Washington'
+            $model.parents.motherName = 'Mary Ball Washington'
 
-            $model.parents.children.firstChild = 'Cristiane Mendes de Oliveira'
-            $model.parents.children.secondChild = 'Eduardo Mendes de Oliveira'
+            $model.parents.children.firstChild = 'Samuel Washington'
+            $model.parents.children.secondChild = 'Lawrence Washington'
 
             var collection = [];
-            var positionName = ['Armador', 'Ala-armador', 'Ala', 'Ala-pivo', 'Pivo'];
+            var positionName = ['Point Guard', 'Shooting Guard', 'Small forward', 'Power Forward', 'Post'];
             var iPosition = 0;
 
             for (var index = 0; index < 1000; index++) {
                 var mdl = $model.team.createItem();
 
                 mdl.id = index;
-                mdl.playerName = 'Jogador ' + index;
+                mdl.playerName = 'Player ' + index;
                 mdl.playerPosition = positionName[iPosition];
 
                 $model.team.add(mdl);
@@ -133,7 +143,7 @@
             }
 
             $model.team.update(function (item) { return item.id == '1' }, function (item) {
-                item.playerName = "Jogador *";
+                item.playerName = "Player *";
             });
 
             var descrFriend = 'school;job;job'.split(';');
@@ -150,6 +160,9 @@
             $form.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
                 return true;
             }
+            
+            $model.contact.$model.name = 'Charles Washington';
+            $model.contact.$model.phone = '202 555 1000';
 
             $func.firstName.focus();
         });

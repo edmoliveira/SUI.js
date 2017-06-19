@@ -15,11 +15,14 @@ if ([].forEach == undefined) {
     var self_propertyName = '$sui';
 
     function factory() {
+        
         var OBJECT_TYPE = {
             VALUE_TYPE: 0
             , REFERENCE_TYPE: 1
             , ARRAY_TYPE: 2
+            , FORM_CHILD: 3
         };
+        
         var self_instance;
 
         if (self_instance) {
@@ -69,6 +72,8 @@ if ([].forEach == undefined) {
                         legendsRefArray.forEach( function (item, index) {
                             searchPropertyRefLegend(formModel, item);
                         });
+
+                        parentElement.removeAttribute('sui-form');
                     }
 
                     this.__sui__.$addLegendsRef = function (item) {
@@ -135,12 +140,14 @@ if ([].forEach == undefined) {
 
                             if (funcName == null) { throw 'This component type not exists [' + typeValue + ']'; }
 
-                            var comp = $sui.components[funcName]();
+                            var typeObj = $sui.components[funcName](true);
 
-                            if (comp.__sui__.objectType() == OBJECT_TYPE.VALUE_TYPE) {
-                                var opropertyModel = new propertyModel(formModel, propName);
+                            if (typeObj == OBJECT_TYPE.VALUE_TYPE) {
+                                var comp = $sui.components[funcName]();
 
-                                formModel.__sui__[propName] = opropertyModel;
+                                var oPropertyModel = new propertyModel(formModel, propName);
+
+                                formModel.__sui__[propName] = oPropertyModel;
 
                                 formModel.$func[propName] = new funcPropertyModel(formModel.__sui__[propName]);
 
@@ -154,7 +161,7 @@ if ([].forEach == undefined) {
                                     attr.removeNamedItem('mask');
                                 }
 
-                                formModel.__sui__[prop.value].setElement(comp);
+                                formModel.__sui__[propName].setElement(comp);
                                 
                                 createProperty(formModel, propName);
 
@@ -179,16 +186,16 @@ if ([].forEach == undefined) {
 
                                 elementComp.parentNode.replaceChild(comp, elementComp);
 
-                                opropertyModel.addEvents();
+                                oPropertyModel.addEvents();
                             }
-                            else if (comp.__sui__.objectType() == OBJECT_TYPE.REFERENCE_TYPE) {
-                                if (comp.__sui__.isElementNull) { comp = $sui.components[funcName](null, elementComp); }
+                            else if (typeObj == OBJECT_TYPE.REFERENCE_TYPE) {
+                                var comp = $sui.components[funcName](null, elementComp);
 
                                 formModel.__sui__[propName] = new propertyRefModel(formModel, propName);
 
                                 formModel.$func[propName] = new funcPropertyRefModel(formModel.__sui__[propName]);
 
-                                formModel.__sui__[prop.value].setElement(comp);
+                                formModel.__sui__[propName].setElement(comp);
                                 
                                 createProperty(formModel, propName);
 
@@ -202,13 +209,6 @@ if ([].forEach == undefined) {
 
                                 attr.removeNamedItem('prop');
                                 attr.removeNamedItem('sui-comp');
-
-                                for (var iAttr = 0; iAttr < attr.length; iAttr++) {
-                                    var elAttribute = document.createAttribute(attr[iAttr].name);
-                                    elAttribute.value = attr[iAttr].value;
-
-                                    comp.setAttributeNode(elAttribute);
-                                }
                                 
                                 var componentChildren = searchComponents(comp, formModel[propName], formModel);
 
@@ -216,14 +216,16 @@ if ([].forEach == undefined) {
                                     formModel.__sui__[propName].settings(componentChildren[0], componentChildren[componentChildren.length - 1]);
                                 }
                             }
-                            else if (comp.__sui__.objectType() == OBJECT_TYPE.ARRAY_TYPE) {
-                                var opropertyModel = new propertyArrayModel(formModel, propName);
+                            else if (typeObj == OBJECT_TYPE.ARRAY_TYPE) {
+                                var comp = $sui.components[funcName]();
 
-                                formModel.__sui__[propName] = opropertyModel;
+                                var oPropertyModel = new propertyArrayModel(formModel, propName);
+
+                                formModel.__sui__[propName] = oPropertyModel;
 
                                 formModel.$func[propName] = new funcPropertyArrayModel(formModel.__sui__[propName]);
 
-                                formModel.__sui__[prop.value].setElement(comp, elementComp.innerHTML);
+                                formModel.__sui__[propName].setElement(comp, elementComp.innerHTML);
 
                                 createProperty(formModel, propName);
 
@@ -247,6 +249,32 @@ if ([].forEach == undefined) {
                                 }
 
                                 elementComp.parentNode.replaceChild(comp, elementComp);
+                            }
+                            else if (typeObj == OBJECT_TYPE.FORM_CHILD) {
+                                attr.removeNamedItem('prop');
+                                attr.removeNamedItem('sui-comp');     
+
+                                var formIdTemp = '$__suiTemp__$';
+
+                                var elAttribute = document.createAttribute('sui-form');
+                                elAttribute.value = formIdTemp;
+
+                                elementComp.setAttributeNode(elAttribute);      
+                                
+                                $sui.loadForm(formIdTemp, function ($formChild) {
+                                    formModel.__sui__[propName] = $formChild;
+                                });          
+
+
+                                (function(senderModel, propertyName){
+                                    Object.defineProperty(senderModel, propertyName, {
+                                        get: function () {
+                                            return this.__sui__[propertyName];
+                                        }
+                                    });                                    
+                                })(formModel, propName);
+                                
+                                elementComp.removeAttribute('sui-form');     
                             }
                         }
                     }
@@ -257,7 +285,7 @@ if ([].forEach == undefined) {
                 }
 
                 function searchLegends(parentElement, formModel) {
-                    var legendCollection = querySelectorElements(parentElement, 'sui-value');//parentElement.querySelectorAll('[sui-value]');
+                    var legendCollection = querySelectorElements(parentElement, 'sui-value');
 
                     for (var index = 0; index < legendCollection.length; index++) {
                         var el = legendCollection[index];
@@ -300,7 +328,7 @@ if ([].forEach == undefined) {
                             if (funcName != null) {
                                 var typeObj = $sui.components[funcName](true);
 
-                                isSearch = !(typeObj == OBJECT_TYPE.REFERENCE_TYPE || typeObj == OBJECT_TYPE.ARRAY_TYPE);
+                                isSearch = !(typeObj == OBJECT_TYPE.REFERENCE_TYPE || typeObj == OBJECT_TYPE.ARRAY_TYPE || typeObj == OBJECT_TYPE.FORM_CHILD);
                             }
                         }
                             
@@ -740,7 +768,14 @@ if ([].forEach == undefined) {
         }
 
         this.components = {
-            createText: function (isIni) {
+            createForm: function (isIni) {
+                var type = OBJECT_TYPE.FORM_CHILD;
+
+                if (isIni) { return type; }
+
+
+            }
+            , createText: function (isIni) {
                 var type = OBJECT_TYPE.VALUE_TYPE;
 
                 if (isIni) { return type; }
@@ -933,20 +968,8 @@ if ([].forEach == undefined) {
 
 			    if (isIni) { return type; }
 
-			    var el = null;
-
-			    if (element == null) {
-			        el = document.createElement('tt');
-
-			        el.__sui__ = new Object();
-			        el.__sui__.isElementNull = true;
-			    }
-			    else {
-			        el = element;
-
-			        el.__sui__ = new Object();
-			    }
-
+			    var el = element;
+                el.__sui__ = new Object();
 			    el.__sui__.value = new Object();
 
 			    el.__sui__.objectType = function () {
