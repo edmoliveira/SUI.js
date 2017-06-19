@@ -54,21 +54,19 @@
                 <h1 sui-value="$sui.legendYourName $sui.firstName $sui.lastName" ></h1>
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
             </p>
-            <p>
-                <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="4">
-                    Father Name: <tt sui-comp = "text" prop="fatherName" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                    Mother Name: <tt sui-comp = "text" prop="motherName" tabIndex="1" nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
+            <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="4">
+                Father Name: <tt sui-comp = "text" prop="fatherName" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                Mother Name: <tt sui-comp = "text" prop="motherName" tabIndex="1" nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
+                <br /><br />
+                <h1 sui-value="Parents: $sui.fatherName and $sui.motherName" ></h1>
+                <br /><br />
+                <div sui-comp="custom" prop="children" tabIndex="2" nextTabIndex="0">
+                    First Child: <tt sui-comp = "text" prop="firstChild" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                    Second Child: <tt sui-comp = "text" prop="secondChild" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
                     <br /><br />
-                    <h1 sui-value="Parents: $sui.fatherName and $sui.motherName" ></h1>
-                    <br /><br />
-                    <div sui-comp="custom" prop="children" tabIndex="2" nextTabIndex="0">
-                        First Child: <tt sui-comp = "text" prop="firstChild" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                        Second Child: <tt sui-comp = "text" prop="secondChild" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
-                        <br /><br />
-                        <h1 sui-value="Children: $sui.firstChild and $sui.secondChild" ></h1>
-                    </div>
+                    <h1 sui-value="Children: $sui.firstChild and $sui.secondChild" ></h1>
                 </div>
-            </p>
+            </div>
             <p></p>
             <tt sui-comp="repeater" prop="friends" tabIndex="4" nextTabIndex="5">
                 <div>
@@ -101,7 +99,7 @@
     //https://microsoft.github.io/monaco-editor/index.html
 
     $sui.ready(function () {
-        $sui.loadControl('caduser', function ($control, $model, $func) {
+        $sui.loadForm('caduser', function ($form, $model, $func) {
             $model.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
             $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
 
@@ -149,7 +147,7 @@
                 $model.friends.add(mdl)
             }
 
-            $control.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
+            $form.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
                 return true;
             }
 

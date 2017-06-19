@@ -34,7 +34,7 @@ if ([].forEach == undefined) {
             });
         }
 
-        this.loadControl = function (selector, action) {
+        this.loadForm = function (selector, action) {
             var elementCollection = document.querySelectorAll('[sui-form="' + selector + '"]');
 
             if (elementCollection.length > 0) {
@@ -43,13 +43,13 @@ if ([].forEach == undefined) {
                 function formSuiJS(parentElement) {
                     var self = this;
 
-                    var ctrlModel = new Object();
+                    var formModel = new Object();
                     var legendsRefArray = [];
 
                     this.__sui__ = new Object();
 
                     this.__sui__.$getprotoM = function () {
-                        return ctrlModel;
+                        return formModel;
                     }
 
                     this.onChangeProperty = null;
@@ -64,10 +64,10 @@ if ([].forEach == undefined) {
                     };
 
                     this.__sui__.$initialize = function () {
-                        searchComponents(parentElement, ctrlModel);
+                        searchComponents(parentElement, formModel);
                         
                         legendsRefArray.forEach( function (item, index) {
-                            searchPropertyRefLegend(ctrlModel, item);
+                            searchPropertyRefLegend(formModel, item);
                         });
                     }
 
@@ -92,16 +92,16 @@ if ([].forEach == undefined) {
                     action(oFormSuiJS, oFormSuiJS.$model, oFormSuiJS.$model.$func);
                 }
 
-                function searchComponents(parentElement, ctrlModel, parentCtrlModel) {
-                    ctrlModel.__sui__ = new Object();
-                    ctrlModel.__sui__.parentCtrlModel = parentCtrlModel;
+                function searchComponents(parentElement, formModel, parentFormModel) {
+                    formModel.__sui__ = new Object();
+                    formModel.__sui__.parentFormModel = parentFormModel;
 
-                    ctrlModel.$func = new Object();
-                    ctrlModel.$func.__sui__ = ctrlModel.__sui__;
+                    formModel.$func = new Object();
+                    formModel.$func.__sui__ = formModel.__sui__;
 
-                    ctrlModel.__sui__.$components = new Object();
-                    ctrlModel.__sui__.$components.items = [];
-                    ctrlModel.__sui__.$components.moveFocus = function (tabIndex) {
+                    formModel.__sui__.$components = new Object();
+                    formModel.__sui__.$components.items = [];
+                    formModel.__sui__.$components.moveFocus = function (tabIndex) {
                         for (var index = 0; index < this.items.length; index++) {
                             if (this.items[index].tabIndex == $sui.func.textToInt(tabIndex)) {
                                 this.items[index].__sui__.setFocus();
@@ -123,7 +123,7 @@ if ([].forEach == undefined) {
                         if (type != null && prop != null) {
                             var propName = prop.value;
 
-                            if (ctrlModel.__sui__[propName] != undefined) { throw 'This property already exists [' + propName + '][' + selector + ']'; }
+                            if (formModel.__sui__[propName] != undefined) { throw 'This property already exists [' + propName + '][' + selector + ']'; }
 
                             var mask = attr.getNamedItem('mask');
                             var tabIndex = attr.getNamedItem('tabIndex');
@@ -138,11 +138,11 @@ if ([].forEach == undefined) {
                             var comp = $sui.components[funcName]();
 
                             if (comp.__sui__.objectType() == OBJECT_TYPE.VALUE_TYPE) {
-                                var opropertyModel = new propertyModel(ctrlModel, propName);
+                                var opropertyModel = new propertyModel(formModel, propName);
 
-                                ctrlModel.__sui__[propName] = opropertyModel;
+                                formModel.__sui__[propName] = opropertyModel;
 
-                                ctrlModel.$func[propName] = new funcPropertyModel(ctrlModel.__sui__[propName]);
+                                formModel.$func[propName] = new funcPropertyModel(formModel.__sui__[propName]);
 
                                 if (mask != null) {
                                     funcName = findFunction($sui.masks, mask.value);
@@ -154,18 +154,18 @@ if ([].forEach == undefined) {
                                     attr.removeNamedItem('mask');
                                 }
 
-                                ctrlModel.__sui__[prop.value].setElement(comp);
+                                formModel.__sui__[prop.value].setElement(comp);
                                 
-                                createProperty(ctrlModel, propName);
+                                createProperty(formModel, propName);
 
                                 if (tabIndex != null && nextTabIndex != null) {
-                                    ctrlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
+                                    formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
 
                                     attr.removeNamedItem('nextTabIndex');
                                     attr.removeNamedItem('tabIndex');
                                 }
 
-                                ctrlModel.__sui__.$components.items.push(comp);
+                                formModel.__sui__.$components.items.push(comp);
 
                                 attr.removeNamedItem('prop');
                                 attr.removeNamedItem('sui-comp');
@@ -184,21 +184,21 @@ if ([].forEach == undefined) {
                             else if (comp.__sui__.objectType() == OBJECT_TYPE.REFERENCE_TYPE) {
                                 if (comp.__sui__.isElementNull) { comp = $sui.components[funcName](null, elementComp); }
 
-                                ctrlModel.__sui__[propName] = new propertyRefModel(ctrlModel, propName);
+                                formModel.__sui__[propName] = new propertyRefModel(formModel, propName);
 
-                                ctrlModel.$func[propName] = new funcPropertyRefModel(ctrlModel.__sui__[propName]);
+                                formModel.$func[propName] = new funcPropertyRefModel(formModel.__sui__[propName]);
 
-                                ctrlModel.__sui__[prop.value].setElement(comp);
+                                formModel.__sui__[prop.value].setElement(comp);
                                 
-                                createProperty(ctrlModel, propName);
+                                createProperty(formModel, propName);
 
                                 if (tabIndex != null && nextTabIndex != null) {
-                                    ctrlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
+                                    formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
 
                                     attr.removeNamedItem('nextTabIndex');
                                 }
 
-                                ctrlModel.__sui__.$components.items.push(comp);
+                                formModel.__sui__.$components.items.push(comp);
 
                                 attr.removeNamedItem('prop');
                                 attr.removeNamedItem('sui-comp');
@@ -210,31 +210,31 @@ if ([].forEach == undefined) {
                                     comp.setAttributeNode(elAttribute);
                                 }
                                 
-                                var componentChildren = searchComponents(comp, ctrlModel[propName], ctrlModel);
+                                var componentChildren = searchComponents(comp, formModel[propName], formModel);
 
                                 if (componentChildren.length > 0) {
-                                    ctrlModel.__sui__[propName].settings(componentChildren[0], componentChildren[componentChildren.length - 1]);
+                                    formModel.__sui__[propName].settings(componentChildren[0], componentChildren[componentChildren.length - 1]);
                                 }
                             }
                             else if (comp.__sui__.objectType() == OBJECT_TYPE.ARRAY_TYPE) {
-                                var opropertyModel = new propertyArrayModel(ctrlModel, propName);
+                                var opropertyModel = new propertyArrayModel(formModel, propName);
 
-                                ctrlModel.__sui__[propName] = opropertyModel;
+                                formModel.__sui__[propName] = opropertyModel;
 
-                                ctrlModel.$func[propName] = new funcPropertyArrayModel(ctrlModel.__sui__[propName]);
+                                formModel.$func[propName] = new funcPropertyArrayModel(formModel.__sui__[propName]);
 
-                                ctrlModel.__sui__[prop.value].setElement(comp, elementComp.innerHTML);
+                                formModel.__sui__[prop.value].setElement(comp, elementComp.innerHTML);
 
-                                createProperty(ctrlModel, propName);
+                                createProperty(formModel, propName);
 
                                 if (tabIndex != null && nextTabIndex != null) {
-                                    ctrlModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
+                                    formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
 
                                     attr.removeNamedItem('nextTabIndex');
                                     attr.removeNamedItem('tabIndex');
                                 }
 
-                                ctrlModel.__sui__.$components.items.push(comp);
+                                formModel.__sui__.$components.items.push(comp);
 
                                 attr.removeNamedItem('prop');
                                 attr.removeNamedItem('sui-comp');
@@ -251,12 +251,12 @@ if ([].forEach == undefined) {
                         }
                     }
 
-                    searchLegends(parentElement, ctrlModel);
+                    searchLegends(parentElement, formModel);
 
-                    return ctrlModel.__sui__.$components.items;
+                    return formModel.__sui__.$components.items;
                 }
 
-                function searchLegends(parentElement, ctrlModel) {
+                function searchLegends(parentElement, formModel) {
                     var legendCollection = querySelectorElements(parentElement, 'sui-value');//parentElement.querySelectorAll('[sui-value]');
 
                     for (var index = 0; index < legendCollection.length; index++) {
@@ -268,7 +268,7 @@ if ([].forEach == undefined) {
                         el.__sui__ = new Object();
                         el.__sui__.properties = [];
 
-                        searchPropertyLegend(el, ctrlModel, value);
+                        searchPropertyLegend(el, formModel, value);
                         addPropertyRefLegend(el, value);
 
                         fillPropertyValueLegend(el, value);
@@ -321,23 +321,23 @@ if ([].forEach == undefined) {
                     });
                 }
 
-                function searchPropertyLegend(el, ctrlModel, contentReg) {
+                function searchPropertyLegend(el, formModel, contentReg) {
                     var reg = new RegExp(/\$sui\.\w+/g);
 
                     var result;
                     while ((result = reg.exec(contentReg)) != null) {
                         var propName = result[0].replace('$sui.', '');
 
-                        if (ctrlModel.__sui__[propName] == undefined) {
+                        if (formModel.__sui__[propName] == undefined) {
 
-                            var oPropertyReadOnlyModel = new propertyReadOnlyModel(ctrlModel, propName);
+                            var oPropertyReadOnlyModel = new propertyReadOnlyModel(formModel, propName);
 
-                            ctrlModel.__sui__[propName] = oPropertyReadOnlyModel;
+                            formModel.__sui__[propName] = oPropertyReadOnlyModel;
                             
-                            createProperty(ctrlModel, propName);
+                            createProperty(formModel, propName);
                         }
 
-                        var property = ctrlModel.__sui__[propName];
+                        var property = formModel.__sui__[propName];
 
                         (function (element, text, objProp) {
                             objProp.onChangeValue.push(function () {
@@ -349,10 +349,10 @@ if ([].forEach == undefined) {
                     }
                 }
 
-                function searchPropertyRefLegend(ctrlModel, legendsRef) {
+                function searchPropertyRefLegend(formModel, legendsRef) {
                     var properties = legendsRef.propName.split('.');
 
-                    var parentMdl = ctrlModel;
+                    var parentMdl = formModel;
                     var property = null;
                     
                     for (var iProp = 0; iProp < properties.length; iProp++) {
@@ -422,7 +422,7 @@ if ([].forEach == undefined) {
                     return name;
                 }
 
-                function propertyReadOnlyModel(ctrlModel, prop) {
+                function propertyReadOnlyModel(formModel, prop) {
                     var self = this;
 
                     var value = null;
@@ -466,7 +466,7 @@ if ([].forEach == undefined) {
                     }
                 }
 
-                function propertyModel(ctrlModel, prop) {
+                function propertyModel(formModel, prop) {
                     var self = this;
 
                     var el = null;
@@ -487,7 +487,7 @@ if ([].forEach == undefined) {
 
                     this.addEvents = function () {
                         $sui.func.addEvent('change', el, function () {
-                            if (oFormSuiJS.__sui__.$triggerChangePropertyArray(ctrlModel, self.propertyName, this.__sui__.getValue(), this.__sui__.getNewValue())) {
+                            if (oFormSuiJS.__sui__.$triggerChangePropertyArray(formModel, self.propertyName, this.__sui__.getValue(), this.__sui__.getNewValue())) {
                                 this.__sui__.setValue(this.__sui__.getNewValue());
                             }
                             else {
@@ -501,7 +501,7 @@ if ([].forEach == undefined) {
                             if (key == 9) {
                                 e.preventDefault();
 
-                                ctrlModel.__sui__.$components.moveFocus(ntTbIn);
+                                formModel.__sui__.$components.moveFocus(ntTbIn);
                             }
                         });
                     }
@@ -550,7 +550,7 @@ if ([].forEach == undefined) {
                     }
                 }
 
-                function propertyRefModel(ctrlModel, prop) {
+                function propertyRefModel(formModel, prop) {
                     var self = this;
 
                     var firstComponent = null;
@@ -612,7 +612,7 @@ if ([].forEach == undefined) {
                                 if (key == 9) {
                                     e.preventDefault();
 
-                                    ctrlModel.__sui__.$components.moveFocus(ntTbIn);
+                                    formModel.__sui__.$components.moveFocus(ntTbIn);
                                 }
                             });
                         }
@@ -631,7 +631,7 @@ if ([].forEach == undefined) {
                     }
                 }
 
-                function propertyArrayModel(ctrlModel, prop) {
+                function propertyArrayModel(formModel, prop) {
                     var self = this;
 
                     var el = null;
@@ -669,7 +669,7 @@ if ([].forEach == undefined) {
 
                             parentElement.appendChild(elementDiv);
 
-                            searchComponents(parentElement, newModel, 1, ctrlModel);
+                            searchComponents(parentElement, newModel, 1, formModel);
 
                             parentElement.removeChild(elementDiv);
 
