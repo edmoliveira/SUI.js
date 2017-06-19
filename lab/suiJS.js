@@ -21,6 +21,7 @@ if ([].forEach == undefined) {
             , REFERENCE_TYPE: 1
             , ARRAY_TYPE: 2
             , FORM_CHILD: 3
+            , SUBMIT: 4
         };
         
         var self_instance;
@@ -93,13 +94,16 @@ if ([].forEach == undefined) {
                     oFormSuiJS = new formSuiJS(elementSuiForm);
 
                     oFormSuiJS.__sui__.$initialize();
-
-                    action(oFormSuiJS, oFormSuiJS.$model, oFormSuiJS.$model.$func);
+                    
+                    action(oFormSuiJS, oFormSuiJS.$model, oFormSuiJS.$model.$sub, oFormSuiJS.$model.$func);
                 }
 
                 function searchComponents(parentElement, formModel, parentFormModel) {
                     formModel.__sui__ = new Object();
                     formModel.__sui__.parentFormModel = parentFormModel;
+
+                    formModel.$sub = new Object();
+                    formModel.$sub.__sui__ = new Object();
 
                     formModel.$func = new Object();
                     formModel.$func.__sui__ = formModel.__sui__;
@@ -123,16 +127,14 @@ if ([].forEach == undefined) {
                         var attr = elementComp.attributes;
 
                         var type = attr.getNamedItem('sui-comp');
-                        var prop = attr.getNamedItem('prop');
+                        var prop = attr.getNamedItem('sui-prop');
 
                         if (type != null && prop != null) {
                             var propName = prop.value;
 
-                            if (formModel.__sui__[propName] != undefined) { throw 'This property already exists [' + propName + '][' + selector + ']'; }
-
-                            var mask = attr.getNamedItem('mask');
-                            var tabIndex = attr.getNamedItem('tabIndex');
-                            var nextTabIndex = attr.getNamedItem('nextTabIndex');
+                            var mask = attr.getNamedItem('sui-mask');
+                            var tabIndex = attr.getNamedItem('sui-tabindex');
+                            var nextTabIndex = attr.getNamedItem('sui-nexttabindex');
 
                             var typeValue = $sui.func.trim(type.value);
 
@@ -142,7 +144,39 @@ if ([].forEach == undefined) {
 
                             var typeObj = $sui.components[funcName](true);
 
-                            if (typeObj == OBJECT_TYPE.VALUE_TYPE) {
+                            if (typeObj != OBJECT_TYPE.SUBMIT) {
+                                if (formModel.__sui__[propName] != undefined) { throw 'This property already exists [' + propName + '][' + selector + ']'; }
+                            }
+                            else {
+                                if (formModel.$sub.__sui__[propName] != undefined) { throw 'This button already exists [' + propName + '][' + selector + ']'; }
+                            }
+
+                            if (typeObj == OBJECT_TYPE.SUBMIT) {
+                                var comp = $sui.components[funcName](null, elementComp);
+
+                                var oPropertyButtonModel = new propertyButtonModel(formModel, propName);
+
+                                formModel.$sub.__sui__[propName] = oPropertyButtonModel;
+
+                                oPropertyButtonModel.setElement(comp);
+
+                                createPropertyButton(formModel.$sub, propName);
+
+                                if (tabIndex != null && nextTabIndex != null) {
+                                    oPropertyButtonModel.setTabIndex(tabIndex.value, nextTabIndex.value);
+                                    
+                                    attr.removeNamedItem('sui-nexttabindex');
+                                    attr.removeNamedItem('sui-tabindex');
+                                }
+
+                                formModel.__sui__.$components.items.push(comp);
+
+                                attr.removeNamedItem('sui-prop');
+                                attr.removeNamedItem('sui-comp'); 
+                                
+                                oPropertyButtonModel.addEvents();                             
+                            }
+                            else if (typeObj == OBJECT_TYPE.VALUE_TYPE) {
                                 var comp = $sui.components[funcName]();
 
                                 var oPropertyModel = new propertyModel(formModel, propName);
@@ -158,23 +192,23 @@ if ([].forEach == undefined) {
 
                                     $sui.masks[funcName](comp);
 
-                                    attr.removeNamedItem('mask');
+                                    attr.removeNamedItem('sui-mask');
                                 }
 
                                 formModel.__sui__[propName].setElement(comp);
                                 
                                 createProperty(formModel, propName);
-
+                                
                                 if (tabIndex != null && nextTabIndex != null) {
                                     formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
-
-                                    attr.removeNamedItem('nextTabIndex');
-                                    attr.removeNamedItem('tabIndex');
+                                    
+                                    attr.removeNamedItem('sui-nexttabindex');
+                                    attr.removeNamedItem('sui-tabindex');
                                 }
 
                                 formModel.__sui__.$components.items.push(comp);
 
-                                attr.removeNamedItem('prop');
+                                attr.removeNamedItem('sui-prop');
                                 attr.removeNamedItem('sui-comp');
 
                                 for (var iAttr = 0; iAttr < attr.length; iAttr++) {
@@ -202,12 +236,13 @@ if ([].forEach == undefined) {
                                 if (tabIndex != null && nextTabIndex != null) {
                                     formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
 
-                                    attr.removeNamedItem('nextTabIndex');
+                                    attr.removeNamedItem('sui-nexttabindex');
+                                    attr.removeNamedItem('sui-tabindex');
                                 }
 
                                 formModel.__sui__.$components.items.push(comp);
 
-                                attr.removeNamedItem('prop');
+                                attr.removeNamedItem('sui-prop');
                                 attr.removeNamedItem('sui-comp');
                                 
                                 var componentChildren = searchComponents(comp, formModel[propName], formModel);
@@ -232,13 +267,13 @@ if ([].forEach == undefined) {
                                 if (tabIndex != null && nextTabIndex != null) {
                                     formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
 
-                                    attr.removeNamedItem('nextTabIndex');
-                                    attr.removeNamedItem('tabIndex');
+                                    attr.removeNamedItem('sui-nexttabindex');
+                                    attr.removeNamedItem('sui-tabindex');
                                 }
 
                                 formModel.__sui__.$components.items.push(comp);
 
-                                attr.removeNamedItem('prop');
+                                attr.removeNamedItem('sui-prop');
                                 attr.removeNamedItem('sui-comp');
 
                                 for (var iAttr = 0; iAttr < attr.length; iAttr++) {
@@ -251,7 +286,7 @@ if ([].forEach == undefined) {
                                 elementComp.parentNode.replaceChild(comp, elementComp);
                             }
                             else if (typeObj == OBJECT_TYPE.FORM_CHILD) {
-                                attr.removeNamedItem('prop');
+                                attr.removeNamedItem('sui-prop');
                                 attr.removeNamedItem('sui-comp');     
 
                                 var formIdTemp = '$__suiTemp__$';
@@ -261,8 +296,11 @@ if ([].forEach == undefined) {
 
                                 elementComp.setAttributeNode(elAttribute);      
                                 
+                                var parentFormSelf = oFormSuiJS;
+
                                 $sui.loadForm(formIdTemp, function ($formChild) {
                                     formModel.__sui__[propName] = $formChild;
+                                    formModel.__sui__[propName].$parentForm = parentFormSelf;
                                 });          
 
 
@@ -346,6 +384,14 @@ if ([].forEach == undefined) {
 						, set: function (v) {
 						    this.__sui__[propertyName].set(v);
 						}
+                    });
+                }
+
+                function createPropertyButton(senderModel, propertyName) {
+                    Object.defineProperty(senderModel, propertyName, {
+                        get: function () {
+                            return this.__sui__[propertyName].get();
+                        }
                     });
                 }
 
@@ -450,6 +496,60 @@ if ([].forEach == undefined) {
                     return name;
                 }
 
+                function propertyButtonModel(formModel, prop) {
+                    var self = this;
+                    var obj = null;
+
+                    var el = null;
+                    var tbIn = 0;
+                    var ntTbIn = 0;
+
+                    this.propertyName = prop;
+
+                    this.setElement = function (elem) {
+                        el = elem;
+
+                        obj = {
+                            element: el
+                            , on: function(event, func) {
+                                $sui.func.addEvent(event, el, func);
+                            }
+                            , focus: function() {
+                                el.focus();
+                            }
+                            , changeNextTabIndex: function(nextTabIndex) {
+                                ntTbIn = nextTabIndex;                                
+                            }
+                        };
+                    }
+                    this.focus = function () {
+                        el.__sui__.setFocus();
+                    }
+
+                    this.setTabIndex = function (tabIndex, nextTabIndex) {
+                        el.__sui__.setTabIndex(tabIndex);
+
+                        tbIn = tabIndex;
+                        ntTbIn = nextTabIndex; 
+                    }
+
+                    this.get = function () {
+                        return obj;
+                    }
+
+                    this.addEvents = function () {
+                        $sui.func.addEvent('keydown', el, function (e) {
+                            var key = e.charCode || e.keyCode || 0;
+
+                            if (key == 9) {
+                                e.preventDefault();
+
+                                formModel.__sui__.$components.moveFocus(ntTbIn);
+                            }
+                        });
+                    }
+                }
+
                 function propertyReadOnlyModel(formModel, prop) {
                     var self = this;
 
@@ -491,6 +591,10 @@ if ([].forEach == undefined) {
 
                     this.focus = function () {
                         propertyModel.focus();
+                    }
+
+                    this.clear = function () {
+                        propertyModel.clear();
                     }
                 }
 
@@ -536,6 +640,10 @@ if ([].forEach == undefined) {
 
                     this.focus = function () {
                         el.__sui__.setFocus();
+                    }
+
+                    this.clear = function () {
+                        el.__sui__.clear();
                     }
 
                     this.setTabIndex = function (tabIndex, nextTabIndex) {
@@ -697,7 +805,7 @@ if ([].forEach == undefined) {
 
                             parentElement.appendChild(elementDiv);
 
-                            searchComponents(parentElement, newModel, 1, formModel);
+                            searchComponents(parentElement, newModel, formModel);
 
                             parentElement.removeChild(elementDiv);
 
@@ -772,8 +880,28 @@ if ([].forEach == undefined) {
                 var type = OBJECT_TYPE.FORM_CHILD;
 
                 if (isIni) { return type; }
+            }
+            , createButton: function (isIni, element) {
+                var type = OBJECT_TYPE.SUBMIT;
 
+                if (isIni) { return type; }
 
+                var el = element;
+                el.__sui__ = new Object();
+
+			    el.__sui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__sui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__sui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+			    return el;
             }
             , createText: function (isIni) {
                 var type = OBJECT_TYPE.VALUE_TYPE;
@@ -818,6 +946,10 @@ if ([].forEach == undefined) {
 
                 el.__sui__.setFocus = function () {
                     el.focus();
+                }
+
+                el.__sui__.clear = function () {
+                    el.__sui__.setValue('');
                 }
 
                 el.__sui__.setTabIndex = function (tabIndex) {

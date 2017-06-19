@@ -42,56 +42,61 @@
                 Type your:
             </p>
             <p>
-                First Name: <tt sui-comp = "text" prop="firstName" mask="time" tabIndex="0" nextTabIndex="1" ></tt>
+                First Name: <tt sui-comp = "text" sui-prop="firstName" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
             </p>
             <p>
-                Last Name: <tt sui-comp = "text" prop="lastName" mask="time" tabIndex="1" nextTabIndex="2"></tt>
+                Last Name: <tt sui-comp = "text" sui-prop="lastName" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2"></tt>
             </p>
             <p>
-                Wife Name: <tt sui-comp = "text" prop="wifeName" mask="time" tabIndex="2" nextTabIndex="3"></tt>
+                Wife Name: <tt sui-comp = "text" sui-prop="wifeName" sui-mask="time" sui-tabIndex="2" sui-nextTabIndex="3"></tt>
             </p>
             <p>
                 <h1 sui-value="$sui.legendYourName $sui.firstName $sui.lastName" ></h1>
                 <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
             </p>
-            <div sui-comp="custom" prop="parents" tabIndex="3" nextTabIndex="4" style="border:1px solid red;">
-                Father Name: <tt sui-comp = "text" prop="fatherName" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                Mother Name: <tt sui-comp = "text" prop="motherName" tabIndex="1" nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
+            <div sui-comp="custom" sui-prop="parents" sui-tabIndex="3" sui-nextTabIndex="4" style="border:1px solid red;">
+                Father Name: <tt sui-comp = "text" sui-prop="fatherName" sui-tabIndex="0" sui-nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                Mother Name: <tt sui-comp = "text" sui-prop="motherName" sui-tabIndex="1" sui-nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
                 <br /><br />
                 <h1 sui-value="Parents: $sui.fatherName and $sui.motherName" ></h1>
                 <br /><br />
-                <div sui-comp="custom" prop="children" tabIndex="2" nextTabIndex="0">
-                    First Child: <tt sui-comp = "text" prop="firstChild" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                    Second Child: <tt sui-comp = "text" prop="secondChild" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
+                <div sui-comp="custom" sui-prop="children" sui-tabIndex="2" sui-nextTabIndex="0">
+                    First Child: <tt sui-comp = "text" sui-prop="firstChild" sui-tabIndex="0" sui-nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                    Second Child: <tt sui-comp = "text" sui-prop="secondChild" sui-tabIndex="1" sui-nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
                     <br /><br />
                     <h1 sui-value="Children: $sui.firstChild and $sui.secondChild" ></h1>
                 </div>
             </div>
             <p></p>
-            <tt sui-comp="repeater" prop="friends" tabIndex="4" nextTabIndex="5">
+            <tt sui-comp="repeater" sui-prop="friends" sui-tabIndex="4" sui-nextTabIndex="5">
                 <div>
-                    Name: <tt sui-comp = "text" prop="name" tabIndex="0" nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                    Description: <tt sui-comp = "text" prop="description" tabIndex="1" nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
+                    Name: <tt sui-comp = "text" sui-prop="name" sui-tabIndex="0" sui-nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
+                    Description: <tt sui-comp = "text" sui-prop="description" sui-tabIndex="1" sui-nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
                     <br /><br />
                     <h1 sui-value="Friend: $sui.name [$sui.description]" ></h1>
                 </div>
             </tt>
             <p></p>
-            <tt sui-comp="repeater" prop="team" tabIndex="5" nextTabIndex="0" class="repeater">
+            <tt sui-comp="repeater" sui-prop="team" sui-tabIndex="5" sui-nextTabIndex="6" class="repeater">
                 <label sui-value="$sui.id" style="display:none"></label>
                 <label sui-value="$sui.playerName:"></label> &nbsp;
                 <label sui-value="$sui.playerPosition"></label>
             </tt>
             <p></p>
-            <div sui-comp="form" prop="contact" style="text-align:center;width:100%;">
-                <h1 sui-value="Contact: $sui.name [$sui.phone]" ></h1>
+            <div sui-comp="form" sui-prop="contact" style="text-align:center;width:100%;">                
                 <p>
-                    Name: <tt sui-comp = "text" prop="name" mask="time" tabIndex="1" nextTabIndex="0" ></tt>
+                    Name: <tt sui-comp = "text" sui-prop="name" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
                 </p>  
                 <p>
-                    Phone: <tt sui-comp = "text" prop="phone" mask="time" tabIndex="0" nextTabIndex="1" ></tt>
+                    Phone: <tt sui-comp = "text" sui-prop="phone" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2" ></tt>
                 </p>    
+                <button sui-comp="button" sui-prop="addContact" sui-tabIndex="2" sui-nextTabIndex="0">Add</button>
             </div>
+            <p></p>
+            <tt sui-comp="repeater" sui-prop="contactList" sui-tabIndex="6" sui-nextTabIndex="0" class="repeater">
+                <label sui-value="$sui.name:"></label> &nbsp;
+                <label sui-value="$sui.phone"></label>
+            </tt>
             <p></p>
             <div style="width:100%;text-align:center;">
                 <h3 style="font-family: Arial, Helvetica, sans-serif; color: #006666;"
@@ -109,7 +114,7 @@
     //https://microsoft.github.io/monaco-editor/index.html
 
     $sui.ready(function () {
-        $sui.loadForm('caduser', function ($form, $model, $func) {
+        $sui.loadForm('caduser', function ($form, $model, $sub, $func) {
             $model.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
             $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
 
@@ -160,11 +165,30 @@
             $form.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
                 return true;
             }
-            
-            $model.contact.$model.name = 'Charles Washington';
-            $model.contact.$model.phone = '202 555 1000';
+
+            contactForm($model.contact, $model.contact.$model, $model.contact.$model.$sub, $model.contact.$model.$func);
 
             $func.firstName.focus();
         });
+
+        function contactForm($form, $model, $sub, $func) {
+            $model.name = '';
+            $model.phone = '';
+
+            $sub.addContact.on('click', function () {
+                var objList = $form.$parentForm.$model.contactList;
+
+                var mdl = objList.createItem();
+
+                mdl.name = $model.name;
+                mdl.phone = $model.phone;
+                
+                objList.add(mdl);
+
+                $func.name.clear();
+                $func.phone.clear();
+                $func.name.focus();
+            });
+        }
     });
 </script>
