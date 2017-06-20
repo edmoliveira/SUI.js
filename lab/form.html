@@ -25,7 +25,41 @@
             .repeater > div:last-child
             {
                 border-bottom: 0px solid blue;
-            }            
+            }       
+            
+            .cell
+            {
+                margin-top:4px;
+                margin-bottom:4px;
+            }
+            
+            .cellLabel
+            {
+                display:inline-block;
+                width:100px;
+                text-align:right;
+                margin-right:4px;
+            }     
+            
+            .cellInput
+            {
+                display:inline-block;
+            }     
+            
+            label[sui-error]       
+            {
+                color:Red;
+            }
+            
+            label[sui-warning]       
+            {
+                color:#ec971f;
+            }
+            
+            label[sui-info]       
+            {
+                color:blue; 
+            }                        
         </style>
     </head>
     <body>
@@ -38,41 +72,93 @@
                 sui-value="$sui.firstName [$suiP.parents.fatherName] [$suiP.parents.motherName]">
             </h2>
 
-            <p>
-                Type your:
-            </p>
-            <p>
-                First Name: <tt sui-comp = "text" sui-prop="firstName" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
-            </p>
-            <p>
-                Last Name: <tt sui-comp = "text" sui-prop="lastName" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2"></tt>
-            </p>
-            <p>
-                Wife Name: <tt sui-comp = "text" sui-prop="wifeName" sui-mask="time" sui-tabIndex="2" sui-nextTabIndex="3"></tt>
-            </p>
-            <p>
-                <h1 sui-value="$sui.legendYourName $sui.firstName $sui.lastName" ></h1>
-                <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
-            </p>
+            <div>
+                <div class="cell cellLabel">
+                    First Name: 
+                </div>
+                <div class="cell cellInput">
+                    <tt sui-comp = "text" sui-prop="firstName" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                </div>                
+            </div>
+            <div>
+                <div class="cell cellLabel">
+                    Last Name: 
+                </div>
+                <div class="cell cellInput">
+                    <tt sui-comp = "text" sui-prop="lastName" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2"></tt>
+                </div>
+            </div>
+            <div>
+                <div class="cell cellLabel">
+                    Wife Name: 
+                </div>
+                <div class="cell cellInput">
+                    <tt sui-comp = "text" sui-prop="wifeName" sui-mask="time" sui-tabIndex="2" sui-nextTabIndex="3"></tt>
+                </div>
+            </div>
+            
+            <h1 sui-value="$sui.legendYourName $sui.firstName $sui.lastName" ></h1>
+            <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
+
             <div sui-comp="custom" sui-prop="parents" sui-tabIndex="3" sui-nextTabIndex="4" style="border:1px solid red;">
-                Father Name: <tt sui-comp = "text" sui-prop="fatherName" sui-tabIndex="0" sui-nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                Mother Name: <tt sui-comp = "text" sui-prop="motherName" sui-tabIndex="1" sui-nextTabIndex="2" ></tt> &nbsp;&nbsp;&nbsp;
-                <br /><br />
+                <div>
+                    <div class="cell cellLabel">
+                        Father Name: 
+                    </div>
+                    <div class="cell cellInput">
+                        <tt sui-comp = "text" sui-prop="fatherName" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                    </div>
+                </div>
+                <div>
+                    <div class="cell cellLabel">
+                        Mother Name: 
+                    </div>
+                    <div class="cell cellInput">
+                        <tt sui-comp = "text" sui-prop="motherName" sui-tabIndex="1" sui-nextTabIndex="2" ></tt>
+                    </div>
+                </div>
+                
                 <h1 sui-value="Parents: $sui.fatherName and $sui.motherName" ></h1>
-                <br /><br />
+
                 <div sui-comp="custom" sui-prop="children" sui-tabIndex="2" sui-nextTabIndex="0">
-                    First Child: <tt sui-comp = "text" sui-prop="firstChild" sui-tabIndex="0" sui-nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                    Second Child: <tt sui-comp = "text" sui-prop="secondChild" sui-tabIndex="1" sui-nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
-                    <br /><br />
+                    <div>
+                        <div class="cell cellLabel">
+                            First Child: 
+                        </div>
+                        <div class="cell cellInput">
+                            <tt sui-comp = "text" sui-prop="firstChild" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="cell cellLabel">
+                            Second Child: 
+                        </div>
+                        <div class="cell cellInput">
+                            <tt sui-comp = "text" sui-prop="secondChild" sui-tabIndex="1" sui-nextTabIndex="0" ></tt>
+                        </div>
+                    </div>
                     <h1 sui-value="Children: $sui.firstChild and $sui.secondChild" ></h1>
                 </div>
             </div>
             <p></p>
             <tt sui-comp="repeater" sui-prop="friends" sui-tabIndex="4" sui-nextTabIndex="5">
                 <div>
-                    Name: <tt sui-comp = "text" sui-prop="name" sui-tabIndex="0" sui-nextTabIndex="1" ></tt> &nbsp;&nbsp;&nbsp;
-                    Description: <tt sui-comp = "text" sui-prop="description" sui-tabIndex="1" sui-nextTabIndex="0" ></tt> &nbsp;&nbsp;&nbsp;
-                    <br /><br />
+                    <div>
+                        <div class="cell cellLabel">
+                            Name: 
+                        </div>
+                        <div class="cell cellInput">
+                            <tt sui-comp = "text" sui-prop="name" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="cell cellLabel">
+                            Description: 
+                        </div>
+                        <div class="cell cellInput">
+                            <tt sui-comp = "text" sui-prop="description" sui-tabIndex="1" sui-nextTabIndex="0" ></tt>
+                        </div>
+                    </div>
                     <h1 sui-value="Friend: $sui.name [$sui.description]" ></h1>
                 </div>
             </tt>
@@ -83,14 +169,28 @@
                 <label sui-value="$sui.playerPosition"></label>
             </tt>
             <p></p>
-            <div sui-comp="form" sui-prop="contact" style="text-align:center;width:100%;">                
-                <p>
-                    Name: <tt sui-comp = "text" sui-prop="name" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
-                </p>  
-                <p>
-                    Phone: <tt sui-comp = "text" sui-prop="phone" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2" ></tt>
-                </p>    
-                <button sui-comp="button" sui-prop="addContact" sui-tabIndex="2" sui-nextTabIndex="0">Add</button>
+            <div sui-comp="form" sui-prop="contact" style="border:1px solid red;width:290px;">  
+                <p></p>
+                <div>
+                    <div class="cell cellLabel">
+                        Name: 
+                    </div>
+                    <div class="cell cellInput">
+                        <tt sui-comp = "text" sui-prop="name" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                    </div>
+                </div>      
+                <div>
+                    <div class="cell cellLabel">
+                        Phone: 
+                    </div>
+                    <div class="cell cellInput">
+                        <tt sui-comp = "text" sui-prop="phone" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2" ></tt>
+                    </div>
+                </div> 
+                <div style="padding:10px;text-align:right">
+                    <button sui-comp="button" sui-prop="addContact" sui-tabIndex="2" sui-nextTabIndex="0" style="width:150px;height:40px;margin-right:10px;">Add</button>
+                </div>  
+                
             </div>
             <p></p>
             <tt sui-comp="repeater" sui-prop="contactList" sui-tabIndex="6" sui-nextTabIndex="0" class="repeater">
@@ -114,7 +214,7 @@
     //https://microsoft.github.io/monaco-editor/index.html
 
     $sui.ready(function () {
-        $sui.loadForm('caduser', function ($form, $model, $sub, $func) {
+        $sui.loadForm('caduser', function ($form, $model) {
             $model.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
             $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
 
@@ -166,29 +266,48 @@
                 return true;
             }
 
-            contactForm($model.contact, $model.contact.$model, $model.contact.$model.$sub, $model.contact.$model.$func);
+            contactForm($model.contact, $model.contact.$model);
 
-            $func.firstName.focus();
+            $model.$firstName.focus();
         });
 
-        function contactForm($form, $model, $sub, $func) {
+        function contactForm($form, $model) {
             $model.name = '';
             $model.phone = '';
 
-            $sub.addContact.on('click', function () {
+            $model._addContact.on('click', function () {
                 var objList = $form.$parentForm.$model.contactList;
 
                 var mdl = objList.createItem();
 
                 mdl.name = $model.name;
                 mdl.phone = $model.phone;
-                
+
                 objList.add(mdl);
 
-                $func.name.clear();
-                $func.phone.clear();
-                $func.name.focus();
+                $model.$name.clear();
+                $model.$phone.clear();
+                $model.$name.focus();
             });
+
+            contactValidation($model);
+        }
+
+        function contactValidation($model) {
+            $model.$name.Validation = function (validForm) {
+                if ($model.$name.trim() == '') {
+                    validForm.addWarning('Name is required');
+                }
+            };
+
+            $model.$phone.Validation = function (validForm) {
+                if ($model.$phone.trim() == '') {
+                    validForm.addWarning('Phone is required');
+                }
+                else if (!$model.$phone.isValidPhoneBr()) {
+                    validForm.addWarning('Phone invalid format');
+                }
+            };
         }
     });
 </script>

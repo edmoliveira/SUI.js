@@ -23,6 +23,12 @@ if ([].forEach == undefined) {
             , FORM_CHILD: 3
             , SUBMIT: 4
         };
+
+        var MESSAGE_VALIDATION = {
+            ERROR: 0
+            , WARNING: 1
+            , INFO: 2
+        };
         
         var self_instance;
 
@@ -95,18 +101,18 @@ if ([].forEach == undefined) {
 
                     oFormSuiJS.__sui__.$initialize();
                     
-                    action(oFormSuiJS, oFormSuiJS.$model, oFormSuiJS.$model.$sub, oFormSuiJS.$model.$func);
+                    action(oFormSuiJS, oFormSuiJS.$model);
                 }
 
                 function searchComponents(parentElement, formModel, parentFormModel) {
                     formModel.__sui__ = new Object();
                     formModel.__sui__.parentFormModel = parentFormModel;
 
-                    formModel.$sub = new Object();
-                    formModel.$sub.__sui__ = new Object();
+                    formModel.__sui__.$sub = new Object();
+                    formModel.__sui__.$sub.__sui__ = formModel.__sui__;
 
-                    formModel.$func = new Object();
-                    formModel.$func.__sui__ = formModel.__sui__;
+                    formModel.__sui__.$func = new Object();
+                    formModel.__sui__.$func.__sui__ = formModel.__sui__;
 
                     formModel.__sui__.$components = new Object();
                     formModel.__sui__.$components.items = [];
@@ -128,10 +134,24 @@ if ([].forEach == undefined) {
 
                         var type = attr.getNamedItem('sui-comp');
                         var prop = attr.getNamedItem('sui-prop');
-
-                        if (type != null && prop != null) {
+                        
+                        if (type != null && prop != null ) {
                             var propName = prop.value;
 
+                            if($sui.func.trim(propName) == '') { 
+                                throw 'Property name is empty [' + elementComp.tagName + '][' + selector + ']'; 
+                            } 
+                            else { 
+                                var carP = $sui.func.trim(propName).substr(0, 1);
+
+                                if(carP == '$') { 
+                                    throw 'Property name cannot start with "$" [' + propName + '][' + selector + ']'; 
+                                }
+                                else if(carP == '_') { 
+                                    throw 'Property name cannot start with "_" [' + propName + '][' + selector + ']'; 
+                                }
+                            } 
+                            
                             var mask = attr.getNamedItem('sui-mask');
                             var tabIndex = attr.getNamedItem('sui-tabindex');
                             var nextTabIndex = attr.getNamedItem('sui-nexttabindex');
@@ -148,7 +168,7 @@ if ([].forEach == undefined) {
                                 if (formModel.__sui__[propName] != undefined) { throw 'This property already exists [' + propName + '][' + selector + ']'; }
                             }
                             else {
-                                if (formModel.$sub.__sui__[propName] != undefined) { throw 'This button already exists [' + propName + '][' + selector + ']'; }
+                                if (formModel.__sui__.$sub.__sui__[propName] != undefined) { throw 'This button already exists [' + propName + '][' + selector + ']'; }
                             }
 
                             if (typeObj == OBJECT_TYPE.SUBMIT) {
@@ -156,11 +176,11 @@ if ([].forEach == undefined) {
 
                                 var oPropertyButtonModel = new propertyButtonModel(formModel, propName);
 
-                                formModel.$sub.__sui__[propName] = oPropertyButtonModel;
+                                formModel.__sui__.$sub[propName] = oPropertyButtonModel;
 
                                 oPropertyButtonModel.setElement(comp);
-
-                                createPropertyButton(formModel.$sub, propName);
+                                
+                                createPropertyButton(formModel, propName);
 
                                 if (tabIndex != null && nextTabIndex != null) {
                                     oPropertyButtonModel.setTabIndex(tabIndex.value, nextTabIndex.value);
@@ -183,7 +203,7 @@ if ([].forEach == undefined) {
 
                                 formModel.__sui__[propName] = oPropertyModel;
 
-                                formModel.$func[propName] = new funcPropertyModel(formModel.__sui__[propName]);
+                                formModel.__sui__.$func[propName] = new funcPropertyModel(formModel.__sui__[propName]);
 
                                 if (mask != null) {
                                     funcName = findFunction($sui.masks, mask.value);
@@ -198,6 +218,7 @@ if ([].forEach == undefined) {
                                 formModel.__sui__[propName].setElement(comp);
                                 
                                 createProperty(formModel, propName);
+                                createPropertyFunc(formModel, propName);
                                 
                                 if (tabIndex != null && nextTabIndex != null) {
                                     formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
@@ -218,7 +239,9 @@ if ([].forEach == undefined) {
                                     comp.setAttributeNode(elAttribute);
                                 }
 
-                                elementComp.parentNode.replaceChild(comp, elementComp);
+                                var containerValidation = oPropertyModel.createValidation();
+
+                                elementComp.parentNode.replaceChild(containerValidation, elementComp);
 
                                 oPropertyModel.addEvents();
                             }
@@ -227,11 +250,12 @@ if ([].forEach == undefined) {
 
                                 formModel.__sui__[propName] = new propertyRefModel(formModel, propName);
 
-                                formModel.$func[propName] = new funcPropertyRefModel(formModel.__sui__[propName]);
+                                formModel.__sui__.$func[propName] = new funcPropertyRefModel(formModel.__sui__[propName]);
 
                                 formModel.__sui__[propName].setElement(comp);
                                 
                                 createProperty(formModel, propName);
+                                createPropertyFunc(formModel, propName);
 
                                 if (tabIndex != null && nextTabIndex != null) {
                                     formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
@@ -258,11 +282,12 @@ if ([].forEach == undefined) {
 
                                 formModel.__sui__[propName] = oPropertyModel;
 
-                                formModel.$func[propName] = new funcPropertyArrayModel(formModel.__sui__[propName]);
+                                formModel.__sui__.$func[propName] = new funcPropertyArrayModel(formModel.__sui__[propName]);
 
                                 formModel.__sui__[propName].setElement(comp, elementComp.innerHTML);
 
                                 createProperty(formModel, propName);
+                                createPropertyFunc(formModel, propName);
 
                                 if (tabIndex != null && nextTabIndex != null) {
                                     formModel.__sui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
@@ -302,7 +327,6 @@ if ([].forEach == undefined) {
                                     formModel.__sui__[propName] = $formChild;
                                     formModel.__sui__[propName].$parentForm = parentFormSelf;
                                 });          
-
 
                                 (function(senderModel, propertyName){
                                     Object.defineProperty(senderModel, propertyName, {
@@ -387,12 +411,28 @@ if ([].forEach == undefined) {
                     });
                 }
 
-                function createPropertyButton(senderModel, propertyName) {
-                    Object.defineProperty(senderModel, propertyName, {
+                function createPropertyFunc(senderModel, propertyName) {
+                    var propN = '$' + propertyName;
+
+                    var fGet = {
                         get: function () {
-                            return this.__sui__[propertyName].get();
-                        }
-                    });
+                            return this.__sui__.$func[propertyName];
+                        }                        
+                    }
+
+                    Object.defineProperty(senderModel, propN, fGet);
+                }
+
+                function createPropertyButton(senderModel, propertyName) {
+                    var propN = '_' + propertyName;
+
+                    var fGet = {
+                        get: function () {
+                            return this.__sui__.$sub[propertyName].get();
+                        }                        
+                    }
+
+                    Object.defineProperty(senderModel, propN, fGet);
                 }
 
                 function searchPropertyLegend(el, formModel, contentReg) {
@@ -496,6 +536,48 @@ if ([].forEach == undefined) {
                     return name;
                 }
 
+                function validationForm() {
+                    var messageValidation = [];
+
+                    this.addError = function(message) {
+                        messageValidation.push({ type: MESSAGE_VALIDATION.ERROR, msg: message });
+                    }
+
+                    this.addWarning = function(message) {
+                        messageValidation.push({ type: MESSAGE_VALIDATION.WARNING, msg: message });
+                    }
+
+                    this.addInfo = function(message) {
+                        messageValidation.push({ type: MESSAGE_VALIDATION.INFO, msg: message });
+                    }
+
+                    this.__sui__ = new Object();
+
+                    this.__sui__.hasMessages = function() {
+                        return messageValidation.length > 0;
+                    }
+
+                    this.__sui__.get = function() {
+                        var er = [];
+                        var war = [];
+                        var inf = [];
+
+                        messageValidation.forEach(function (item, index) {
+                            if (item.type == MESSAGE_VALIDATION.ERROR) {
+                                er.push(item.msg);
+                            }
+                            else if (item.type == MESSAGE_VALIDATION.WARNING) {
+                                war.push(item.msg);
+                            }
+                            else if (item.type == MESSAGE_VALIDATION.INFO) {
+                                inf.push(item.msg);
+                            }
+                        });
+
+                        return { error: er.join('\n'), warning: war.join('\n'), info: inf.join('\n') };
+                    }
+                }
+
                 function propertyButtonModel(formModel, prop) {
                     var self = this;
                     var obj = null;
@@ -515,7 +597,7 @@ if ([].forEach == undefined) {
                                 $sui.func.addEvent(event, el, func);
                             }
                             , focus: function() {
-                                el.focus();
+                                self.focus();
                             }
                             , changeNextTabIndex: function(nextTabIndex) {
                                 ntTbIn = nextTabIndex;                                
@@ -596,6 +678,26 @@ if ([].forEach == undefined) {
                     this.clear = function () {
                         propertyModel.clear();
                     }
+
+                    this.removeValidationMessage = function() {
+                        propertyModel.removeValidationMessage();
+                    }
+
+                    this.trim = function() {
+                        return $sui.func.trim(propertyModel.get());
+                    }
+
+                    this.isValidPhoneBr = function() {
+                        return $sui.func.isValidPhoneBr(propertyModel.get());;
+                    }
+
+                    var setValidation = {
+                        set: function (v) {
+                            propertyModel.checkProperty = v;
+                        }                        
+                    }
+
+                    Object.defineProperty(this, 'Validation', setValidation);
                 }
 
                 function propertyModel(formModel, prop) {
@@ -605,7 +707,45 @@ if ([].forEach == undefined) {
                     var tbIn = 0;
                     var ntTbIn = 0;
 
+                    var errorLabel = null;
+                    var warningLabel = null;
+                    var infoLabel = null;
+
                     this.propertyName = prop;
+
+                    this.checkProperty = null;
+
+                    this.validate = function() {
+                        if (self.checkProperty != null) {
+                            var oValidationForm = new validationForm();
+
+                            self.checkProperty(oValidationForm);
+                            
+                            if (oValidationForm.__sui__.hasMessages() > 0) {
+                                var obj = oValidationForm.__sui__.get();
+
+                                if (obj.error != '') {
+                                    self.throwError(obj.error);
+                                }
+
+                                if (obj.warning != '') {
+                                    self.throwWarning(obj.warning);
+                                }
+
+                                if (obj.info != '') {
+                                    self.throwInfo(obj.info);
+                                }
+
+                                return false;
+                            }
+                            else {
+                                return true;
+                            }
+                        }
+                        else {
+                            return true;
+                        }
+                    }
 
                     this.setElement = function (elem) {
                         el = elem;
@@ -616,6 +756,32 @@ if ([].forEach == undefined) {
                             });
                         });
                     }
+                    
+                    this.createValidation = function() {
+                        errorLabel = createLabel('sui-error');
+                        warningLabel = createLabel('sui-warning');
+                        infoLabel = createLabel('sui-info');
+
+                        var containerValidation = document.createElement('DIV');
+
+                        containerValidation.appendChild(el);
+                        containerValidation.appendChild(errorLabel);
+                        containerValidation.appendChild(warningLabel);
+                        containerValidation.appendChild(infoLabel);
+
+                        function createLabel(attrName){
+                            var itemNotElement = document.createElement('LABEL');
+
+                            itemNotElement.innerHTML = '';
+                            itemNotElement.style.display = 'none';
+
+                            itemNotElement.setAttributeNode(document.createAttribute(attrName));  
+                            
+                            return itemNotElement;                          
+                        }
+
+                        return containerValidation;
+                    }
 
                     this.addEvents = function () {
                         $sui.func.addEvent('change', el, function () {
@@ -625,6 +791,8 @@ if ([].forEach == undefined) {
                             else {
                                 this.__sui__.setValue(this.__sui__.getValue());
                             }
+                            
+                            self.validate();
                         });
 
                         $sui.func.addEvent('keydown', el, function (e) {
@@ -636,6 +804,10 @@ if ([].forEach == undefined) {
                                 formModel.__sui__.$components.moveFocus(ntTbIn);
                             }
                         });
+
+                        $sui.func.addEvent('focus', el, function () {
+                            self.removeValidationMessage();
+                        });
                     }
 
                     this.focus = function () {
@@ -644,6 +816,8 @@ if ([].forEach == undefined) {
 
                     this.clear = function () {
                         el.__sui__.clear();
+
+                        this.removeValidationMessage();
                     }
 
                     this.setTabIndex = function (tabIndex, nextTabIndex) {
@@ -671,6 +845,51 @@ if ([].forEach == undefined) {
 
                     this.setNoMask = function (v) {
                         el.__sui__.setValueNoMask(v);
+                    }
+
+                    this.throwError = function (message) {
+                        this.hideWarning();
+                        this.hideInfoLabel();
+
+                        errorLabel.style.display = 'table-row';
+                        errorLabel.innerHTML = message;
+                    }
+
+                    this.throwWarning = function (message) {
+                        self.hideError();
+                        self.hideInfo();
+
+                        warningLabel.style.display = 'table-row';
+                        warningLabel.innerHTML = message;
+                    }
+
+                    this.throwInfo = function (message) {
+                        self.hideError();
+                        self.hideWarning();
+
+                        infoLabel.style.display = 'table-row';
+                        infoLabel.innerHTML = message;
+                    }
+
+                    this.hideError = function () {
+                        errorLabel.style.display = 'none';
+                        errorLabel.innerHTML = '';
+                    }
+
+                    this.hideWarning = function () {
+                        warningLabel.style.display = 'none';
+                        warningLabel.innerHTML = '';
+                    }
+
+                    this.hideInfo = function () {
+                        infoLabel.style.display = 'none';
+                        infoLabel.innerHTML = '';
+                    }
+
+                    this.removeValidationMessage = function() {
+                        self.hideError();
+                        self.hideWarning();
+                        self.hideInfo();                        
                     }
 
                     this.onChangeValue = [];
@@ -1168,6 +1387,9 @@ if ([].forEach == undefined) {
 			, trim: function (value) {
 			    return value.replace(/^[\s]+|[\s]+$/g, "");
 			}
+            , isValidPhoneBr: function(value) {
+                return true;
+            }
         }
 
         this.masks = {
