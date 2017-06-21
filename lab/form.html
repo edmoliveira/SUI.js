@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>  
         <title>Form SUI.js</title>
@@ -61,6 +62,119 @@
                 color:blue; 
             }                        
         </style>
+        <script>
+            //https://microsoft.github.io/monaco-editor/index.html
+
+            $sui.extends.propertyValue.prototype.isValidFirstName = function () {
+                var obj = this.__protoSui__;
+
+                return obj.property != null && obj.fn.trim(obj.property).occur(' ') < 1;
+            }
+
+            $sui.ready(function () {
+                $sui.loadForm('caduser', function ($form, $model) {
+                    $model.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
+                    $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
+
+                    $model.legendYourName = 'Your Name:';
+                    $model.firstName = 'George';
+                    $model.lastName = 'Washington';
+                    $model.wifeName = 'Martha Washington';
+
+                    $model.parents.fatherName = 'Augustine Washington'
+                    $model.parents.motherName = 'Mary Ball Washington'
+
+                    $model.parents.children.firstChild = 'Samuel Washington'
+                    $model.parents.children.secondChild = 'Lawrence Washington'
+
+                    var collection = [];
+                    var positionName = ['Point Guard', 'Shooting Guard', 'Small forward', 'Power Forward', 'Post'];
+                    var iPosition = 0;
+
+                    for (var index = 0; index < 1000; index++) {
+                        var mdl = $model.team.createItem();
+
+                        mdl.id = index;
+                        mdl.playerName = 'Player ' + index;
+                        mdl.playerPosition = positionName[iPosition];
+
+                        $model.team.add(mdl);
+
+                        iPosition++;
+
+                        if (iPosition > 4) { iPosition = 0; }
+                    }
+
+                    $model.team.update(function (item) { return item.id == '1' }, function (item) {
+                        item.playerName = "Player *";
+                    });
+
+                    var descrFriend = 'school;job;job'.split(';');
+
+                    for (var index = 0; index < 3; index++) {
+                        var mdl = $model.friends.createItem();
+
+                        mdl.name = 'Friend ' + index;
+                        mdl.description = descrFriend[index];
+
+                        $model.friends.add(mdl)
+                    }
+
+                    $form.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
+                        return true;
+                    }
+
+                    contactForm($model.contact, $model.contact.$model);
+
+                    $model.$firstName.focus();
+                });
+
+                function contactForm($form, $model) {
+                    $model.name = '';
+                    $model.phone = '';
+
+                    $model._addContact.on('click', function () {
+                        if ($form.ValidateForm()) {
+                            var objList = $form.$parentForm.$model.contactList;
+
+                            var mdl = objList.createItem();
+
+                            mdl.name = $model.name;
+                            mdl.phone = $model.phone;
+
+                            objList.add(mdl);
+
+                            $model.$name.clear();
+                            $model.$phone.clear();
+                            $model.$name.focus();
+                        }
+                    });
+
+                    contactValidation($model);
+                }
+
+                function contactValidation($model) {
+                    $model.$name.Validation = function (validForm) {
+                        if ($model.$name.trim() == '') {
+                            validForm.addWarning('Name is required');
+                        }
+
+                        if (!$model.$name.isValidFirstName()) {
+                            validForm.addWarning('Name invalid');
+                        }
+                    };
+
+                    $model.$phone.Validation = function (validForm) {
+                        if ($model.$phone.trim() == '') {
+                            validForm.addWarning('Phone is required');
+                        }
+                        else if (!$model.$phone.isValidPhoneBr()) {
+                            validForm.addWarning('Phone invalid format');
+                        }
+                    };
+                }
+            });
+        </script>
     </head>
     <body>
         <div sui-form="caduser">
@@ -210,104 +324,3 @@
         </div>
     </body>
 </html>
-<script>
-    //https://microsoft.github.io/monaco-editor/index.html
-
-    $sui.ready(function () {
-        $sui.loadForm('caduser', function ($form, $model) {
-            $model.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
-            $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
-
-            $model.legendYourName = 'Your Name:';
-            $model.firstName = 'George';
-            $model.lastName = 'Washington';
-            $model.wifeName = 'Martha Washington';
-
-            $model.parents.fatherName = 'Augustine Washington'
-            $model.parents.motherName = 'Mary Ball Washington'
-
-            $model.parents.children.firstChild = 'Samuel Washington'
-            $model.parents.children.secondChild = 'Lawrence Washington'
-
-            var collection = [];
-            var positionName = ['Point Guard', 'Shooting Guard', 'Small forward', 'Power Forward', 'Post'];
-            var iPosition = 0;
-
-            for (var index = 0; index < 1000; index++) {
-                var mdl = $model.team.createItem();
-
-                mdl.id = index;
-                mdl.playerName = 'Player ' + index;
-                mdl.playerPosition = positionName[iPosition];
-
-                $model.team.add(mdl);
-
-                iPosition++;
-
-                if (iPosition > 4) { iPosition = 0; }
-            }
-
-            $model.team.update(function (item) { return item.id == '1' }, function (item) {
-                item.playerName = "Player *";
-            });
-
-            var descrFriend = 'school;job;job'.split(';');
-
-            for (var index = 0; index < 3; index++) {
-                var mdl = $model.friends.createItem();
-
-                mdl.name = 'Friend ' + index;
-                mdl.description = descrFriend[index];
-
-                $model.friends.add(mdl)
-            }
-
-            $form.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
-                return true;
-            }
-
-            contactForm($model.contact, $model.contact.$model);
-
-            $model.$firstName.focus();
-        });
-
-        function contactForm($form, $model) {
-            $model.name = '';
-            $model.phone = '';
-
-            $model._addContact.on('click', function () {
-                var objList = $form.$parentForm.$model.contactList;
-
-                var mdl = objList.createItem();
-
-                mdl.name = $model.name;
-                mdl.phone = $model.phone;
-
-                objList.add(mdl);
-
-                $model.$name.clear();
-                $model.$phone.clear();
-                $model.$name.focus();
-            });
-
-            contactValidation($model);
-        }
-
-        function contactValidation($model) {
-            $model.$name.Validation = function (validForm) {
-                if ($model.$name.trim() == '') {
-                    validForm.addWarning('Name is required');
-                }
-            };
-
-            $model.$phone.Validation = function (validForm) {
-                if ($model.$phone.trim() == '') {
-                    validForm.addWarning('Phone is required');
-                }
-                else if (!$model.$phone.isValidPhoneBr()) {
-                    validForm.addWarning('Phone invalid format');
-                }
-            };
-        }
-    });
-</script>

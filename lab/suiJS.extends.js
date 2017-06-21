@@ -36,3 +36,15 @@ Array.prototype.where = function (predicate) {
     return array;
 }
 //######################### Array
+
+//######################### String
+///<summary>
+/// Function that count occurrences of a word in a string 
+///</summary>
+String.prototype.occur = function (word) {
+    var oRegExp = new RegExp(word, 'g');
+
+    return (this.toString().match(oRegExp) || []).length;
+}
+
+//######################### String
