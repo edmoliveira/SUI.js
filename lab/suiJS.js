@@ -28,8 +28,9 @@ if ([].forEach == undefined) {
             VALUE_TYPE: 0
             , REFERENCE_TYPE: 1
             , ARRAY_TYPE: 2
-            , FORM_CHILD: 3
-            , SUBMIT: 4
+            , CUSTOM_TYPE: 3
+            , FORM_CHILD: 4
+            , SUBMIT: 5
         };
 
         var MESSAGE_VALIDATION = {
@@ -141,6 +142,217 @@ if ([].forEach == undefined) {
 			    return el;
             }
             
+            self.createSelect = function (isIni) {
+                var type = OBJECT_TYPE.CUSTOM_TYPE;
+
+                if (isIni) { return type; }    
+                
+                var el = document.createElement('SELECT');
+
+                el.__protoSui__ = new Object();
+                el.__protoSui__.options = new Object();
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+                $self_sui.fn.addEvent('change', el, function (e) {
+                    triggerValueChanged();
+                });
+
+                el.__protoSui__.valueChanged = [];
+
+                function triggerValueChanged() {
+                    if (el.__protoSui__.valueChanged.length > 0) {
+                        el.__protoSui__.valueChanged.forEach(function (item, index) {
+                            item(el.__protoSui__.options.getItem());
+                        });
+                    }
+                }
+
+                Object.defineProperty(el.__protoSui__.options, 'length', { get: function () { return el.options.length; } });
+
+                el.__protoSui__.options.getSelectedIndex = function() {
+                    return el.selectedIndex; 
+                }
+
+                el.__protoSui__.options.getText = function() {
+                    return el.selectedOptions[el.selectedIndex].text;
+                }
+
+                el.__protoSui__.options.getValue = function() {
+                    return el.selectedOptions[el.selectedIndex].value;
+                }
+
+                el.__protoSui__.options.setSelectedIndex = function(index) {
+                    el.options[index].selected = true;
+                }
+
+                el.__protoSui__.options.setText = function(text) {
+                    for (var i = 0; i < el.options.length; i++) {
+                        if (el.options[i].text == text) {
+                            el.options[i].selected = true;
+                            break;
+                        }
+                    }
+                }
+
+                el.__protoSui__.options.setValue = function(value) {
+                    for (var i = 0; i < el.options.length; i++) {
+                        if (el.options[i].value == value) {
+                            el.options[i].selected = true;
+                            break;
+                        }
+                    }
+                }
+
+                el.__protoSui__.options.getItem = function() {
+                    return el.selectedOptions[el.selectedIndex].__protoSui__.dataBoundItem;
+                }
+
+                el.__protoSui__.options.add = function(text, value, tag) {
+                    var option = document.createElement('OPTION');
+
+                    option.text = text;
+                    option.value = value;
+                    
+                    option.__protoSui__ = new Object();
+
+                    option.__protoSui__.dataBoundItem = new Object();
+                    option.__protoSui__.dataBoundItem.text = text;
+                    option.__protoSui__.dataBoundItem.value = value;
+                    option.__protoSui__.dataBoundItem.tag = tag;
+
+                    el.appendChild(option);
+                }
+
+                el.__protoSui__.options.getItem = function(index) {
+                    return el.options[index].__protoSui__.dataBoundItem;
+                }
+
+                el.__protoSui__.options.removeAt = function(index) {
+                     el.removeChild(el.options[index]);
+                }
+
+                el.__protoSui__.options.getDataSource = function() {
+                    var items = [];
+
+                    for (var i = 0; i < el.options.length; i++) {
+                        items.push(el.options[i].__protoSui__.dataBoundItem);
+                    }
+
+                    return items; 
+                }
+
+                el.__protoSui__.dataBound = new selectClass(el);
+
+			    return el;                             
+            }
+
+            self.createSelectMultiple = function (isIni) {
+                var type = OBJECT_TYPE.CUSTOM_TYPE;
+
+                if (isIni) { return type; }    
+                
+                var el = document.createElement('SELECT');
+
+                el.setAttribute('multiple', '');
+
+                el.__protoSui__ = new Object();
+                el.__protoSui__.options = new Object();
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+                el.__protoSui__.valueChanged = [];
+
+                function triggerValueChanged() {
+                    if (el.__protoSui__.valueChanged.length > 0) {
+                        el.__protoSui__.valueChanged.forEach(function (item, index) {
+                            item(el.__protoSui__.options.getItem());
+                        });
+                    }
+                }
+
+                Object.defineProperty(el.__protoSui__.options, 'length', { get: function () { return el.options.length; } });
+
+                el.__protoSui__.options.getSelectedItems = function() {
+                    var items = [];
+
+                    for (var i = 0; i < el.options.length; i++) {
+                        if (el.options[i].selected) {                          
+                            items.push(el.options[i].__protoSui__.dataBoundItem);
+                        }
+                    }
+
+                    return items; 
+                }
+
+                el.__protoSui__.options.add = function(text, value, tag) {
+                    var option = document.createElement('OPTION');
+
+                    option.text = text;
+                    option.value = value;
+                    
+                    option.__protoSui__ = new Object();
+
+                    option.__protoSui__.dataBoundItem = new Object();
+                    option.__protoSui__.dataBoundItem.text = text;
+                    option.__protoSui__.dataBoundItem.value = value;
+                    option.__protoSui__.dataBoundItem.tag = tag;
+
+                    Object.defineProperty(option.__protoSui__.dataBoundItem, 'selected', {
+                        get: function () { 
+                            return option.selected; 
+                        } 
+                        , set: function (v) {
+                            option.selected = v;
+                        }
+                    });
+
+                    el.appendChild(option);
+                }
+
+                el.__protoSui__.options.getItem = function(index) {
+                    return el.options[index].__protoSui__.dataBoundItem;
+                }
+
+                el.__protoSui__.options.removeAt = function(index) {
+                     el.removeChild(el.options[index]);
+                }
+
+                el.__protoSui__.options.getDataSource = function() {
+                    var items = [];
+
+                    for (var i = 0; i < el.options.length; i++) {
+                        items.push(el.options[i].__protoSui__.dataBoundItem);
+                    }
+
+                    return items; 
+                }
+
+                el.__protoSui__.dataBound = new selectClass(el, true);
+
+			    return el;                             
+            }
+
             self.createText = function (isIni) {
                 var type = OBJECT_TYPE.VALUE_TYPE;
 
@@ -197,7 +409,7 @@ if ([].forEach == undefined) {
                 el.__protoSui__.valueChanged = [];
 
                 function triggerValueChanged() {
-                    if (el.__protoSui__.valueChanged.length) {
+                    if (el.__protoSui__.valueChanged.length > 0) {
                         el.__protoSui__.valueChanged.forEach(function (item, index) {
                             item({ value: el.value, valueNoMask: el.value });
                         });
@@ -249,17 +461,27 @@ if ([].forEach == undefined) {
 			    }
 
 			    el.__protoSui__.get = function (index) {
-			        return valueOf[index];
+                    if(index < valueOf.length) {
+                        return valueOf[index];
+                    }
+                    else {
+                        throw 'index out of range';
+                    }
 			    }
 
 			    el.__protoSui__.removeAt = function (index) {
-			        var item = valueOf[index];
+                    if(index < valueOf.length) {
+			            var item = valueOf[index];
 
-			        valueOf.splice(index, 1);
+			            valueOf.splice(index, 1);
 
-			        el.removeChild(el.__protoSui__.getElementOfModel(item));
+			            el.removeChild(el.__protoSui__.getElementOfModel(item));
 
-			        triggerValueChanged(item);
+			            triggerValueChanged(item);
+                    }
+                    else {
+                        throw 'index out of range';
+                    }
 			    }
 
 			    el.__protoSui__.remove = function (predicate) {
@@ -325,7 +547,7 @@ if ([].forEach == undefined) {
 			    el.__protoSui__.getElementOfModel = null;
 
 			    function triggerValueChanged(itemValue) {
-			        if (el.__protoSui__.valueChanged.length) {
+			        if (el.__protoSui__.valueChanged.length > 0) {
 			            el.__protoSui__.valueChanged.forEach(function (item, index) {
 			                item(itemValue);
 			            });
@@ -369,7 +591,7 @@ if ([].forEach == undefined) {
 			    el.__protoSui__.valueChanged = [];
 
 			    function triggerValueChanged() {
-			        if (el.__protoSui__.valueChanged.length) {
+			        if (el.__protoSui__.valueChanged.length > 0) {
 			            el.__protoSui__.valueChanged.forEach(function (item, index) {
 			                item(el.__protoSui__.value);
 			            });
@@ -679,6 +901,45 @@ if ([].forEach == undefined) {
                         oPropertyModel.addEvents();
 
                         $form.__protoSui__.$addProperty(oPropertyModel);
+                    }
+                    else if (typeObj == OBJECT_TYPE.CUSTOM_TYPE) {
+                        var comp = $self_sui.components[funcName]();
+
+                        var oPropertyCustomModel = new propertyCustomModel(formModel, propName);
+
+                        formModel.__protoSui__[propName] = oPropertyCustomModel;
+
+                        formModel.__protoSui__.$fn[propName] = new funcPropertyArrayModel(formModel.__protoSui__[propName]);
+
+                        formModel.__protoSui__[propName].setElement(comp);
+
+                        createProperty(formModel, propName);
+                        createPropertyFunc(formModel, propName);
+
+                        if (tabIndex != null && nextTabIndex != null) {
+                            formModel.__protoSui__[propName].setTabIndex(tabIndex.value, nextTabIndex.value);
+
+                            attr.removeNamedItem('sui-nexttabindex');
+                            attr.removeNamedItem('sui-tabindex');
+                        }
+
+                        formModel.__protoSui__.$components.items.push(comp);
+
+                        attr.removeNamedItem('sui-prop');
+                        attr.removeNamedItem('sui-comp');
+
+                        for (var iAttr = 0; iAttr < attr.length; iAttr++) {
+                            var elAttribute = document.createAttribute(attr[iAttr].name);
+                            elAttribute.value = attr[iAttr].value;
+
+                            comp.setAttributeNode(elAttribute);
+                        }
+
+                        var containerValidation = oPropertyCustomModel.createValidation();
+
+                        elementComp.parentNode.replaceChild(containerValidation, elementComp);
+
+                        $form.__protoSui__.$addProperty(oPropertyCustomModel);
                     }
                     else if (typeObj == OBJECT_TYPE.REFERENCE_TYPE) {
                         var comp = $self_sui.components[funcName](null, elementComp);
@@ -1011,6 +1272,116 @@ if ([].forEach == undefined) {
             }
         }
 
+        function propertyValidation(el) {
+            var self = this;
+
+            var errorLabel = null;
+            var warningLabel = null;
+            var infoLabel = null;
+
+            this.checkProperty = null;
+
+            this.validate = function() {
+                if (self.checkProperty != null) {
+                    var oValidationForm = new validationForm();
+
+                    self.checkProperty(oValidationForm);
+                            
+                    if (oValidationForm.__protoSui__.hasMessages() > 0) {
+                        var obj = oValidationForm.__protoSui__.get();
+
+                        if (obj.error != '') {
+                            self.throwError(obj.error);
+                        }
+
+                        if (obj.warning != '') {
+                            self.throwWarning(obj.warning);
+                        }
+
+                        if (obj.info != '') {
+                            self.throwInfo(obj.info);
+                        }
+
+                        return false;
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return true;
+                }
+            }       
+            
+            this.createValidation = function() {
+                errorLabel = createLabelValidation('sui-error');
+                warningLabel = createLabelValidation('sui-warning');
+                infoLabel = createLabelValidation('sui-info');
+
+                var containerValidation = document.createElement('DIV');
+
+                containerValidation.className = 'sui-cont-Val';
+
+                containerValidation.appendChild(el);
+                containerValidation.appendChild(errorLabel);
+                containerValidation.appendChild(warningLabel);
+                containerValidation.appendChild(infoLabel);
+
+                return containerValidation;
+            }        
+            
+            this.throwError = function (message) {
+                this.hideWarning();
+                this.hideInfoLabel();
+
+                errorLabel.innerHTML = message;
+
+                showLabelValidation(errorLabel);
+            }
+
+            this.throwWarning = function (message) {
+                self.hideError();
+                self.hideInfo();
+
+                warningLabel.innerHTML = message;
+
+                showLabelValidation(warningLabel);
+            }
+
+            this.throwInfo = function (message) {
+                self.hideError();
+                self.hideWarning();
+
+                infoLabel.innerHTML = message;
+
+                showLabelValidation(infoLabel);
+            }
+
+            this.hideError = function () {
+                errorLabel.innerHTML = '';
+
+                hideLabelValidation(errorLabel);
+            }
+
+            this.hideWarning = function () {
+                warningLabel.innerHTML = '';
+
+                hideLabelValidation(warningLabel);
+            }
+
+            this.hideInfo = function () {
+                infoLabel.innerHTML = '';
+
+                hideLabelValidation(infoLabel);
+            }
+
+            this.removeValidationMessage = function() {
+                self.hideError();
+                self.hideWarning();
+                self.hideInfo();                        
+            }                     
+        }
+
         function propertyButtonModel(formModel, prop) {
             var self = this;
             var obj = null;
@@ -1139,47 +1510,11 @@ if ([].forEach == undefined) {
             var tbIn = 0;
             var ntTbIn = 0;
 
-            var errorLabel = null;
-            var warningLabel = null;
-            var infoLabel = null;
-
             this.propertyName = prop;
-                    
-            this.checkProperty = null;
-
-            this.validate = function() {
-                if (self.checkProperty != null) {
-                    var oValidationForm = new validationForm();
-
-                    self.checkProperty(oValidationForm);
-                            
-                    if (oValidationForm.__protoSui__.hasMessages() > 0) {
-                        var obj = oValidationForm.__protoSui__.get();
-
-                        if (obj.error != '') {
-                            self.throwError(obj.error);
-                        }
-
-                        if (obj.warning != '') {
-                            self.throwWarning(obj.warning);
-                        }
-
-                        if (obj.info != '') {
-                            self.throwInfo(obj.info);
-                        }
-
-                        return false;
-                    }
-                    else {
-                        return true;
-                    }
-                }
-                else {
-                    return true;
-                }
-            }
 
             this.setElement = function (elem) {
+                propertyValidation.call(this, elem);
+
                 el = elem;
 
                 el.__protoSui__.valueChanged.push(function (obj) {
@@ -1187,32 +1522,6 @@ if ([].forEach == undefined) {
                         item(obj);
                     });
                 });
-            }
-                    
-            this.createValidation = function() {
-                errorLabel = createLabel('sui-error');
-                warningLabel = createLabel('sui-warning');
-                infoLabel = createLabel('sui-info');
-
-                var containerValidation = document.createElement('DIV');
-
-                containerValidation.appendChild(el);
-                containerValidation.appendChild(errorLabel);
-                containerValidation.appendChild(warningLabel);
-                containerValidation.appendChild(infoLabel);
-
-                function createLabel(attrName){
-                    var itemNotElement = document.createElement('LABEL');
-
-                    itemNotElement.innerHTML = '';
-                    itemNotElement.style.display = 'none';
-
-                    itemNotElement.setAttributeNode(document.createAttribute(attrName));  
-                            
-                    return itemNotElement;                          
-                }
-
-                return containerValidation;
             }
 
             this.addEvents = function () {
@@ -1225,7 +1534,9 @@ if ([].forEach == undefined) {
                     else {
                         this.__protoSui__.setValue(this.__protoSui__.getValue());
                     }
-                            
+                });
+
+                $self_sui.fn.addEvent('blur', el, function () {
                     self.validate();
                 });
 
@@ -1281,53 +1592,71 @@ if ([].forEach == undefined) {
                 el.__protoSui__.setValueNoMask(v);
             }
 
-            this.throwError = function (message) {
-                this.hideWarning();
-                this.hideInfoLabel();
+            this.onChangeValue = [];
+        }
 
-                errorLabel.style.display = 'table-row';
-                errorLabel.innerHTML = message;
+        propertyModel.prototype = new propertyValidation();
+        propertyModel.prototype.constructor = propertyModel;
+
+        function funcPropertyCustomModel(propertyCustomModel) {
+            this.changeNextTabIndex = function (newNextTabIndex) {
+                propertyCustomModel.changeNextTabIndex(newNextTabIndex);
             }
 
-            this.throwWarning = function (message) {
-                self.hideError();
-                self.hideInfo();
+            this.focus = function () {
+                propertyCustomModel.focus();
+            }
+        }
 
-                warningLabel.style.display = 'table-row';
-                warningLabel.innerHTML = message;
+        function propertyCustomModel(formModel, prop) {
+            var self = this;
+
+            var el = null;
+            var tbIn = 0;
+            var ntTbIn = 0;
+
+            this.propertyName = prop;
+
+            this.setElement = function (elem) {
+                propertyValidation.call(this, elem);
+
+                el = elem;
+
+                el.__protoSui__.valueChanged.push(function (obj) {
+                    self.onChangeValue.forEach(function (item, index) {
+                        item(obj);
+                    });
+                });
             }
 
-            this.throwInfo = function (message) {
-                self.hideError();
-                self.hideWarning();
-
-                infoLabel.style.display = 'table-row';
-                infoLabel.innerHTML = message;
+            this.get = function () {
+                return el.__protoSui__.dataBound;
             }
 
-            this.hideError = function () {
-                errorLabel.style.display = 'none';
-                errorLabel.innerHTML = '';
+            this.set = function (v) {
+                throw 'This property is read only'
             }
 
-            this.hideWarning = function () {
-                warningLabel.style.display = 'none';
-                warningLabel.innerHTML = '';
+            this.focus = function () {
+                el.__protoSui__.setFocus();
             }
 
-            this.hideInfo = function () {
-                infoLabel.style.display = 'none';
-                infoLabel.innerHTML = '';
+            this.setTabIndex = function (tabIndex, nextTabIndex) {
+                el.__protoSui__.setTabIndex(tabIndex);
+
+                tbIn = tabIndex;
+                ntTbIn = nextTabIndex;
             }
 
-            this.removeValidationMessage = function() {
-                self.hideError();
-                self.hideWarning();
-                self.hideInfo();                        
+            this.changeNextTabIndex = function (newNextTabIndex) {
+                ntTbIn = newNextTabIndex;
             }
 
             this.onChangeValue = [];
         }
+
+        propertyCustomModel.prototype = new propertyValidation();
+        propertyCustomModel.prototype.constructor = propertyCustomModel;
 
         function funcPropertyRefModel(propertyRefModel) {
             this.changeNextTabIndex = function (newNextTabIndex) {
@@ -1507,7 +1836,7 @@ if ([].forEach == undefined) {
                 }
 
                 this.removeAt = function (index) {
-                    elementArray.__protoSui__.removeAt(item);
+                    elementArray.__protoSui__.removeAt(index);
                 }
 
                 this.remove = function (predicate) {
@@ -1524,6 +1853,171 @@ if ([].forEach == undefined) {
             }
 
             this.onChangeValue = [];
+        }
+
+        function createLabelValidation(attrName){
+            var itemNotElement = document.createElement('LABEL');
+
+            itemNotElement.innerHTML = '';
+            itemNotElement.className = 'sui-valHide-label';
+
+            itemNotElement.setAttributeNode(document.createAttribute(attrName));  
+                            
+            return itemNotElement;                          
+        }
+
+        function showLabelValidation(el) {
+            el.className = 'sui-valShow-label';
+        }
+
+        function hideLabelValidation(el) {
+            el.className = 'sui-valHide-label';
+        }
+
+        function selectClass(el, isMultiple) {
+            var options = el.__protoSui__.options;
+
+            if (isMultiple) {
+                Object.defineProperty(this, 'selectedItems', {
+                    get: function () {
+                        return options.getSelectedItems();
+                    }
+                }); 
+            }
+            else {
+                Object.defineProperty(this, 'selectedIndex', {
+                    get: function () {
+                        return options.getSelectedIndex();
+                    }
+                    , set: function (index) {
+                        options.setSelectedIndex(index);
+                    }
+                });
+
+                Object.defineProperty(this, 'selectedText', {
+                    get: function () {
+                        if (this.selectedIndex > -1) {
+                            return options.getText(this.selectedIndex);
+                        }
+                        else {
+                            return null;
+                        }
+                    }
+                    , set: function (v) {
+                        options.setText(v);
+                    }
+                });
+
+                Object.defineProperty(this, 'selectedValue', {
+                    get: function () {
+                        if (this.selectedIndex > -1) {
+                            return options.getValue(this.selectedIndex);
+                        }
+                        else {
+                            return null;
+                        }
+                    }
+                    , set: function (v) {
+                        options.setValue(v);
+                    }
+                });
+
+                Object.defineProperty(this, 'selectedItem', {
+                    get: function () {
+                        if (this.selectedIndex > -1) {
+                            return options.getItem(this.selectedIndex);
+                        }
+                        else {
+                            return null;
+                        }
+                    }
+                });               
+            }
+
+            this.add = function (text, value, tag) {
+                options.add(text, value, tag);
+            }
+
+            this.get = function (index) {
+                if (index < options.length) {
+                    return options.getItem(index);
+                }
+                else {
+                    throw 'index out of range';
+                }
+            }
+
+            this.removeAt = function (index) {
+                if (index < options.length) {
+                    return options.removeAt(index);
+                }
+                else {
+                    throw 'index out of range';
+                }
+            }
+
+            this.remove = function (predicate) {
+                if (predicate != null) {
+                    for (var index = options.length - 1; index >= 0; index--) {
+                        var item = options.getItem(index);
+
+                        if (predicate(item)) {
+                            options.removeAt(index);
+                        }
+                    }
+                }
+            }
+
+            this.where = function (predicate) {
+                var array = [];
+
+                if (predicate != null) {
+                    for (var index = 0; index < options.length; index++) {
+                        var item = options.getItem(index);
+
+                        if (predicate(item)) {
+                            array.push(item);
+                        }
+                    }
+                }
+                else {
+                    for (var index = 0; index < options.length; index++) {
+                        var item = options.getItem(index);
+
+                        array.push(item);
+                    }
+                }
+
+                return array;
+            }
+
+            this.update = function (predicate, result) {
+                if (predicate != null) {
+                    for (var index = 0; index < options.length; index++) {
+                        var item = options.getItem(index);
+
+                        if (predicate(item)) {
+                            result(item);
+                        }
+                    }
+                }
+                else {
+                    for (var index = 0; index < options.length; index++) {
+                        var item = options.getItem(index);
+
+                        result(item);
+                    }
+                }
+            }
+
+            Object.defineProperty(this, 'dataSource', {
+                get: function () {
+                    return options.getDataSource();
+                }
+                , set: function (v) {
+                    throw 'This property is read only'
+                }
+            });
         }
     }
     

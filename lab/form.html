@@ -2,6 +2,9 @@
 <html>
     <head>  
         <title>Form SUI.js</title>
+        
+        <link href="suiJS.css" rel="stylesheet" type="text/css" />
+
         <script src="suiJS.js"></script>
         <script src="suiJS.extends.js"></script>
         <style>
@@ -40,30 +43,17 @@
                 width:100px;
                 text-align:right;
                 margin-right:4px;
+                vertical-align:top;
             }     
             
             .cellInput
             {
                 display:inline-block;
-            }     
-            
-            label[sui-error]       
-            {
-                color:Red;
-            }
-            
-            label[sui-warning]       
-            {
-                color:#ec971f;
-            }
-            
-            label[sui-info]       
-            {
-                color:blue; 
-            }                        
+            }                           
         </style>
         <script>
             //https://microsoft.github.io/monaco-editor/index.html
+                        
 
             $sui.extends.propertyValue.prototype.isValidFirstName = function () {
                 var obj = this.__protoSui__;
@@ -80,6 +70,15 @@
                     $model.firstName = 'George';
                     $model.lastName = 'Washington';
                     $model.wifeName = 'Martha Washington';
+
+                    $model.country.add('--Choose--', -1);
+                    $model.country.add('Canada', 0);
+                    $model.country.add('United States of America', 1);
+                    $model.country.add('Australia', 2);
+
+                    $model.states.add('Connecticut', 1);
+                    $model.states.add('Hawaii', 2);
+                    $model.states.add('Idaho', 3);                                        
 
                     $model.parents.fatherName = 'Augustine Washington'
                     $model.parents.motherName = 'Mary Ball Washington'
@@ -210,11 +209,27 @@
                     <tt sui-comp = "text" sui-prop="wifeName" sui-mask="time" sui-tabIndex="2" sui-nextTabIndex="3"></tt>
                 </div>
             </div>
+            <div>
+                <div class="cell cellLabel">
+                    Country: 
+                </div>
+                <div class="cell cellInput">
+                    <tt sui-comp = "select" sui-prop="country" sui-tabIndex="3" sui-nextTabIndex="4"></tt>
+                </div>
+            </div>
+            <div>
+                <div class="cell cellLabel">
+                    State: 
+                </div>
+                <div class="cell cellInput">
+                    <tt sui-comp = "selectMultiple" sui-prop="states" sui-tabIndex="4" sui-nextTabIndex="5" style="height:100px;width:180px"></tt>
+                </div>
+            </div>
             
             <h1 sui-value="$sui.legendYourName $sui.firstName $sui.lastName" ></h1>
             <h2 sui-value="Wife Name: $sui.wifeName" ></h2>
 
-            <div sui-comp="custom" sui-prop="parents" sui-tabIndex="3" sui-nextTabIndex="4" style="border:1px solid red;">
+            <div sui-comp="custom" sui-prop="parents" sui-tabIndex="4" sui-nextTabIndex="5" style="border:1px solid red;">
                 <div>
                     <div class="cell cellLabel">
                         Father Name: 
@@ -255,7 +270,7 @@
                 </div>
             </div>
             <p></p>
-            <tt sui-comp="repeater" sui-prop="friends" sui-tabIndex="4" sui-nextTabIndex="5">
+            <tt sui-comp="repeater" sui-prop="friends" sui-tabIndex="5" sui-nextTabIndex="6">
                 <div>
                     <div>
                         <div class="cell cellLabel">
@@ -277,7 +292,7 @@
                 </div>
             </tt>
             <p></p>
-            <tt sui-comp="repeater" sui-prop="team" sui-tabIndex="5" sui-nextTabIndex="6" class="repeater">
+            <tt sui-comp="repeater" sui-prop="team" sui-tabIndex="6" sui-nextTabIndex="7" class="repeater">
                 <label sui-value="$sui.id" style="display:none"></label>
                 <label sui-value="$sui.playerName:"></label> &nbsp;
                 <label sui-value="$sui.playerPosition"></label>
@@ -307,7 +322,7 @@
                 
             </div>
             <p></p>
-            <tt sui-comp="repeater" sui-prop="contactList" sui-tabIndex="6" sui-nextTabIndex="0" class="repeater">
+            <tt sui-comp="repeater" sui-prop="contactList" sui-tabIndex="7" sui-nextTabIndex="0" class="repeater">
                 <label sui-value="$sui.name:"></label> &nbsp;
                 <label sui-value="$sui.phone"></label>
             </tt>

@@ -1,0 +1,39 @@
+/* Standard syntax */
+@keyframes sui-val-label-anim {
+    0%   {display: none;opacity:0}
+    100% {display: table-row;opacity:1}
+}
+
+@-webkit-keyframes sui-val-label-anim {
+    0%   {display: none;opacity:0}
+    0%   {display: table-row;opacity:0.5}
+    100% {display: table-row;opacity:1}
+}
+
+.sui-valHide-label
+{
+    display:none;
+}
+            
+.sui-valShow-label
+{
+    display:table-row;
+    
+    -webkit-animation: sui-val-label-anim 1s ease-out;
+    animation: sui-val-label-anim 1s ease-out;     
+}            
+            
+.sui-cont-Val > label[sui-error]       
+{
+    color:Red;
+}
+            
+.sui-cont-Val > label[sui-warning]       
+{
+    color:#ec971f;
+}
+            
+.sui-cont-Val > label[sui-info]       
+{
+    color:blue; 
+}  
