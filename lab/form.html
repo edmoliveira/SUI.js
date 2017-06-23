@@ -71,14 +71,17 @@
                     $model.lastName = 'Washington';
                     $model.wifeName = 'Martha Washington';
 
-                    $model.country.add('--Choose--', -1);
-                    $model.country.add('Canada', 0);
-                    $model.country.add('United States of America', 1);
-                    $model.country.add('Australia', 2);
+                    $model.country.dataSource = [
+                        { text: '--Choose--', value: -1 }
+                        , { text: 'Canada', value: 1, tag: { moneyValue: '2.64'} }
+                        , { text: 'United States of America', value: 2, tag: { moneyValue: '3.45'} }
+                        , { text: 'Australia', value: 3, tag: { moneyValue: '2.54'} }
+                    ];
 
+                    //text | value | tag
                     $model.states.add('Connecticut', 1);
-                    $model.states.add('Hawaii', 2);
-                    $model.states.add('Idaho', 3);                                        
+                    $model.states.add('Hawaii', 2, { isIsland: true });
+                    $model.states.add('Idaho', 3);
 
                     $model.parents.fatherName = 'Augustine Washington'
                     $model.parents.motherName = 'Mary Ball Washington'
@@ -108,16 +111,11 @@
                         item.playerName = "Player *";
                     });
 
-                    var descrFriend = 'school;job;job'.split(';');
-
-                    for (var index = 0; index < 3; index++) {
-                        var mdl = $model.friends.createItem();
-
-                        mdl.name = 'Friend ' + index;
-                        mdl.description = descrFriend[index];
-
-                        $model.friends.add(mdl)
-                    }
+                    $model.friends.dataSource = [
+                        { name: 'Friend1', description: 'job1' }
+                        , { name: 'Friend2', description: 'job2' }
+                        , { name: 'Friend3', description: 'job3' }
+                    ]
 
                     $form.onChangeProperty = function ($sender, $propertyName, $oldValue, $newValue) {
                         return true;
@@ -126,6 +124,8 @@
                     contactForm($model.contact, $model.contact.$model);
 
                     $model.$firstName.focus();
+
+                    $model.$contactList.class.add('repeater');
                 });
 
                 function contactForm($form, $model) {
@@ -322,7 +322,7 @@
                 
             </div>
             <p></p>
-            <tt sui-comp="repeater" sui-prop="contactList" sui-tabIndex="7" sui-nextTabIndex="0" class="repeater">
+            <tt sui-comp="repeater" sui-prop="contactList" sui-tabIndex="7" sui-nextTabIndex="0">
                 <label sui-value="$sui.name:"></label> &nbsp;
                 <label sui-value="$sui.phone"></label>
             </tt>

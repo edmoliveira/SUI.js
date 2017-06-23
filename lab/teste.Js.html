@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>  
+        <title>Form SUI.js</title>
+        <script>
+
+            function teste(args) {
+                testeste(arguments);
+            }
+
+            function testeste(args) {
+                var string = '';
+
+                for (var i = 0; i < args.length; i++) {
+                    string = string.concat(args[i]);
+                }
+
+                console.log(string);
+            }
+
+            teste('1', '2', '3', '4', '5');
+
+            function $classList(el) {
+                this.add = function (args) {    
+                    var className = el.className;
+
+                    for (var i = 0; i < arguments.length; i++) {
+                        className = className.concat(' ', arguments[i]);
+                    }
+
+                    el.className = className;
+                }
+            }
+
+            Object.defineProperty(HTMLElement.prototype, 'classList2', {
+                get: function () {
+                    return new $classList(this);
+                }
+            });
+            
+
+            window.onload = function () {
+                document.getElementById('e').classList2.add('teste3', 'teste2');
+
+                var list = [];
+
+                list.push({ col1: 'row 1 - col 1', col2: 'row 1 - col 2', col3: null });
+                list.push({ col1: 'row 2 - col 1', col2: 'row 3 - col 2' });
+                list.push({ col1: 'row 3 - col 1', col2: 'row 4 - col 2' });
+
+                for (var propList in list[0]) {
+                    console.log(propList);
+                }
+
+//                if (typeof (list[0]['teste']) == 'undefined') {
+//                    document.writeln('certo');
+//                }
+
+//                document.writeln(typeof (list[0]['col3']));
+            }
+        </script>
+    </head>
+    <body>
+        <div id="e" class="aqui teste">
+            <input />
+        </div>
+    </body>
+</html>

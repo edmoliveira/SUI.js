@@ -1,12 +1,12 @@
 ﻿//#Extends!important
-if ([].forEach == undefined) {
+if (typeof( [].forEach ) == 'undefined') {
     Array.prototype.forEach = function (action) {
         for (var index = 0; index < this.length; index++) {
             if (action != null) {
                 action(this[index], index);
             }
         }
-    }    
+    }
 }
 
 (function (win) {
@@ -92,6 +92,8 @@ if ([].forEach == undefined) {
         }
 
         $self_sui.loadForm = function (selector, action) {
+            checkClassList();
+
             var elementCollection = document.querySelectorAll('[sui-form="' + selector + '"]');
 
             if (elementCollection.length > 0) {
@@ -105,591 +107,6 @@ if ([].forEach == undefined) {
                     action(oFormSuiJS, oFormSuiJS.$model);
                 }
             }
-        }
-
-        function $components(fn) {
-            var self = this;
-
-            self.__protoSui__ = new Object();
-            this.__protoSui__.fn = fn;
-
-            self.createForm = function (isIni) {
-                var type = OBJECT_TYPE.FORM_CHILD;
-
-                if (isIni) { return type; }
-            }
-            
-            self.createButton = function (isIni, element) {
-                var type = OBJECT_TYPE.SUBMIT;
-
-                if (isIni) { return type; }
-
-                var el = element;
-                el.__protoSui__ = new Object();
-
-			    el.__protoSui__.objectType = function () {
-			        return type;
-			    }
-
-			    el.__protoSui__.setFocus = function () {
-			        el.focus();
-			    }
-
-			    el.__protoSui__.setTabIndex = function (tabIndex) {
-			        el.tabIndex = tabIndex;
-			    }
-
-			    return el;
-            }
-            
-            self.createSelect = function (isIni) {
-                var type = OBJECT_TYPE.CUSTOM_TYPE;
-
-                if (isIni) { return type; }    
-                
-                var el = document.createElement('SELECT');
-
-                el.__protoSui__ = new Object();
-                el.__protoSui__.options = new Object();
-
-			    el.__protoSui__.objectType = function () {
-			        return type;
-			    }
-
-			    el.__protoSui__.setFocus = function () {
-			        el.focus();
-			    }
-
-			    el.__protoSui__.setTabIndex = function (tabIndex) {
-			        el.tabIndex = tabIndex;
-			    }
-
-                $self_sui.fn.addEvent('change', el, function (e) {
-                    triggerValueChanged();
-                });
-
-                el.__protoSui__.valueChanged = [];
-
-                function triggerValueChanged() {
-                    if (el.__protoSui__.valueChanged.length > 0) {
-                        el.__protoSui__.valueChanged.forEach(function (item, index) {
-                            item(el.__protoSui__.options.getItem());
-                        });
-                    }
-                }
-
-                Object.defineProperty(el.__protoSui__.options, 'length', { get: function () { return el.options.length; } });
-
-                el.__protoSui__.options.getSelectedIndex = function() {
-                    return el.selectedIndex; 
-                }
-
-                el.__protoSui__.options.getText = function() {
-                    return el.selectedOptions[el.selectedIndex].text;
-                }
-
-                el.__protoSui__.options.getValue = function() {
-                    return el.selectedOptions[el.selectedIndex].value;
-                }
-
-                el.__protoSui__.options.setSelectedIndex = function(index) {
-                    el.options[index].selected = true;
-                }
-
-                el.__protoSui__.options.setText = function(text) {
-                    for (var i = 0; i < el.options.length; i++) {
-                        if (el.options[i].text == text) {
-                            el.options[i].selected = true;
-                            break;
-                        }
-                    }
-                }
-
-                el.__protoSui__.options.setValue = function(value) {
-                    for (var i = 0; i < el.options.length; i++) {
-                        if (el.options[i].value == value) {
-                            el.options[i].selected = true;
-                            break;
-                        }
-                    }
-                }
-
-                el.__protoSui__.options.getItem = function() {
-                    return el.selectedOptions[el.selectedIndex].__protoSui__.dataBoundItem;
-                }
-
-                el.__protoSui__.options.add = function(text, value, tag) {
-                    var option = document.createElement('OPTION');
-
-                    option.text = text;
-                    option.value = value;
-                    
-                    option.__protoSui__ = new Object();
-
-                    option.__protoSui__.dataBoundItem = new Object();
-                    option.__protoSui__.dataBoundItem.text = text;
-                    option.__protoSui__.dataBoundItem.value = value;
-                    option.__protoSui__.dataBoundItem.tag = tag;
-
-                    el.appendChild(option);
-                }
-
-                el.__protoSui__.options.getItem = function(index) {
-                    return el.options[index].__protoSui__.dataBoundItem;
-                }
-
-                el.__protoSui__.options.removeAt = function(index) {
-                     el.removeChild(el.options[index]);
-                }
-
-                el.__protoSui__.options.getDataSource = function() {
-                    var items = [];
-
-                    for (var i = 0; i < el.options.length; i++) {
-                        items.push(el.options[i].__protoSui__.dataBoundItem);
-                    }
-
-                    return items; 
-                }
-
-                el.__protoSui__.dataBound = new selectClass(el);
-
-			    return el;                             
-            }
-
-            self.createSelectMultiple = function (isIni) {
-                var type = OBJECT_TYPE.CUSTOM_TYPE;
-
-                if (isIni) { return type; }    
-                
-                var el = document.createElement('SELECT');
-
-                el.setAttribute('multiple', '');
-
-                el.__protoSui__ = new Object();
-                el.__protoSui__.options = new Object();
-
-			    el.__protoSui__.objectType = function () {
-			        return type;
-			    }
-
-			    el.__protoSui__.setFocus = function () {
-			        el.focus();
-			    }
-
-			    el.__protoSui__.setTabIndex = function (tabIndex) {
-			        el.tabIndex = tabIndex;
-			    }
-
-                el.__protoSui__.valueChanged = [];
-
-                function triggerValueChanged() {
-                    if (el.__protoSui__.valueChanged.length > 0) {
-                        el.__protoSui__.valueChanged.forEach(function (item, index) {
-                            item(el.__protoSui__.options.getItem());
-                        });
-                    }
-                }
-
-                Object.defineProperty(el.__protoSui__.options, 'length', { get: function () { return el.options.length; } });
-
-                el.__protoSui__.options.getSelectedItems = function() {
-                    var items = [];
-
-                    for (var i = 0; i < el.options.length; i++) {
-                        if (el.options[i].selected) {                          
-                            items.push(el.options[i].__protoSui__.dataBoundItem);
-                        }
-                    }
-
-                    return items; 
-                }
-
-                el.__protoSui__.options.add = function(text, value, tag) {
-                    var option = document.createElement('OPTION');
-
-                    option.text = text;
-                    option.value = value;
-                    
-                    option.__protoSui__ = new Object();
-
-                    option.__protoSui__.dataBoundItem = new Object();
-                    option.__protoSui__.dataBoundItem.text = text;
-                    option.__protoSui__.dataBoundItem.value = value;
-                    option.__protoSui__.dataBoundItem.tag = tag;
-
-                    Object.defineProperty(option.__protoSui__.dataBoundItem, 'selected', {
-                        get: function () { 
-                            return option.selected; 
-                        } 
-                        , set: function (v) {
-                            option.selected = v;
-                        }
-                    });
-
-                    el.appendChild(option);
-                }
-
-                el.__protoSui__.options.getItem = function(index) {
-                    return el.options[index].__protoSui__.dataBoundItem;
-                }
-
-                el.__protoSui__.options.removeAt = function(index) {
-                     el.removeChild(el.options[index]);
-                }
-
-                el.__protoSui__.options.getDataSource = function() {
-                    var items = [];
-
-                    for (var i = 0; i < el.options.length; i++) {
-                        items.push(el.options[i].__protoSui__.dataBoundItem);
-                    }
-
-                    return items; 
-                }
-
-                el.__protoSui__.dataBound = new selectClass(el, true);
-
-			    return el;                             
-            }
-
-            self.createText = function (isIni) {
-                var type = OBJECT_TYPE.VALUE_TYPE;
-
-                if (isIni) { return type; }
-
-                var el = document.createElement('INPUT');
-                var valueOf = null;
-
-                el.type = 'text';
-                el.__protoSui__ = new Object();
-
-                el.__protoSui__.objectType = function () {
-                    return type;
-                }
-
-                el.__protoSui__.getNewValue = function () {
-                    return el.value;
-                }
-
-                el.__protoSui__.getValue = function () {
-                    return valueOf;
-                }
-
-                el.__protoSui__.setValue = function (v) {
-                    valueOf = v;
-                    el.value = v;
-
-                    triggerValueChanged();
-                }
-
-                el.__protoSui__.getValueNoMask = function () {
-                    return valueOf;
-                }
-
-                el.__protoSui__.setValueNoMask = function (v) {
-                    valueOf = v;
-                    el.value = v;
-
-                    triggerValueChanged();
-                }
-
-                el.__protoSui__.setFocus = function () {
-                    el.focus();
-                }
-
-                el.__protoSui__.clear = function () {
-                    el.__protoSui__.setValue('');
-                }
-
-                el.__protoSui__.setTabIndex = function (tabIndex) {
-                    el.tabIndex = tabIndex;
-                }
-
-                el.__protoSui__.valueChanged = [];
-
-                function triggerValueChanged() {
-                    if (el.__protoSui__.valueChanged.length > 0) {
-                        el.__protoSui__.valueChanged.forEach(function (item, index) {
-                            item({ value: el.value, valueNoMask: el.value });
-                        });
-                    }
-                }
-
-                return el;
-            }
-			
-            self.createRepeater = function (isIni) {
-			    var type = OBJECT_TYPE.ARRAY_TYPE;
-
-			    if (isIni) { return type; }
-
-			    var el = document.createElement('DIV');
-			    var valueOf = [];
-
-			    el.__protoSui__ = new Object();
-
-			    el.__protoSui__.objectType = function () {
-			        return type;
-			    }
-
-			    el.__protoSui__.toString = function () {
-			        return valueOf.length + ' element' + (valueOf.length > 0 ? 's' : '');
-			    }
-
-			    el.__protoSui__.count = function () {
-			        return valueOf.length;
-			    }
-
-			    el.__protoSui__.createItem = function () {
-			        var model = el.__protoSui__.createModel();
-
-			        model.__idm__ = new Object();
-			        model.__idm__.$id = '$isok$'
-
-			        return model;
-			    }
-
-			    el.__protoSui__.add = function (item) {
-			        if (item.__idm__.$id != '$isok$') { throw 'Use the method createItem to create a new object'; }
-
-			        valueOf.push(item);
-
-			        el.appendChild(el.__protoSui__.getElementOfModel(item));
-
-			        triggerValueChanged(item);
-			    }
-
-			    el.__protoSui__.get = function (index) {
-                    if(index < valueOf.length) {
-                        return valueOf[index];
-                    }
-                    else {
-                        throw 'index out of range';
-                    }
-			    }
-
-			    el.__protoSui__.removeAt = function (index) {
-                    if(index < valueOf.length) {
-			            var item = valueOf[index];
-
-			            valueOf.splice(index, 1);
-
-			            el.removeChild(el.__protoSui__.getElementOfModel(item));
-
-			            triggerValueChanged(item);
-                    }
-                    else {
-                        throw 'index out of range';
-                    }
-			    }
-
-			    el.__protoSui__.remove = function (predicate) {
-			        if (predicate != null) {
-			            for (var index = valueOf.length - 1; index >= 0; index--) {
-			                if (predicate(valueOf[index])) {
-			                    var item = valueOf[index];
-
-			                    valueOf.splice(index, 1);
-
-			                    el.removeChild(el.__protoSui__.getElementOfModel(item));
-
-			                    triggerValueChanged(item);
-			                }
-			            }
-			        }
-			    }
-
-			    el.__protoSui__.where = function (predicate) {
-			        var array = [];
-
-			        if (predicate != null) {
-			            for (var index = 0; index < valueOf.length; index++) {
-			                if (predicate(valueOf[index])) {
-			                    array.push(valueOf[index]);
-			                }
-			            }
-			        }
-			        else {
-			            for (var index = 0; index < valueOf.length; index++) {
-			                array.push(valueOf[index]);
-			            }
-			        }
-
-			        return array;
-			    }
-
-			    el.__protoSui__.update = function (predicate, result) {
-			        if (predicate != null) {
-			            for (var index = 0; index < valueOf.length; index++) {
-			                if (predicate(valueOf[index])) {
-			                    result(valueOf[index]);
-			                }
-			            }
-			        }
-			        else {
-			            for (var index = 0; index < valueOf.length; index++) {
-			                result(valueOf[index]);
-			            }
-			        }
-			    }
-
-			    el.__protoSui__.setFocus = function () {
-			        el.focus();
-			    }
-
-			    el.__protoSui__.setTabIndex = function (tabIndex) {
-			        el.tabIndex = tabIndex;
-			    }
-
-			    el.__protoSui__.valueChanged = [];
-			    el.__protoSui__.createModel = null;
-			    el.__protoSui__.getElementOfModel = null;
-
-			    function triggerValueChanged(itemValue) {
-			        if (el.__protoSui__.valueChanged.length > 0) {
-			            el.__protoSui__.valueChanged.forEach(function (item, index) {
-			                item(itemValue);
-			            });
-			        }
-			    }
-
-			    return el;
-			}
-			
-            self.createCustom = function (isIni, element) {
-			    var type = OBJECT_TYPE.REFERENCE_TYPE;
-
-			    if (isIni) { return type; }
-
-			    var el = element;
-                el.__protoSui__ = new Object();
-			    el.__protoSui__.value = new Object();
-
-			    el.__protoSui__.objectType = function () {
-			        return type;
-			    }
-
-			    el.__protoSui__.getValue = function () {
-			        return el.__protoSui__.value;
-			    }
-
-			    el.__protoSui__.setValue = function (v) {
-			        el.__protoSui__.value = v;
-
-			        triggerValueChanged();
-			    }
-
-			    el.__protoSui__.setFocus = function () {
-			        el.focus();
-			    }
-
-			    el.__protoSui__.setTabIndex = function (tabIndex) {
-			        el.tabIndex = tabIndex;
-			    }
-
-			    el.__protoSui__.valueChanged = [];
-
-			    function triggerValueChanged() {
-			        if (el.__protoSui__.valueChanged.length > 0) {
-			            el.__protoSui__.valueChanged.forEach(function (item, index) {
-			                item(el.__protoSui__.value);
-			            });
-			        }
-			    }
-
-			    return el;
-			}
-        }
-
-        function $fn() {
-            var self = this;
-
-            self.__protoSui__ = new Object();
-
-            self.addEvent = function (evnt, elem, fn) {
-                if (elem.addEventListener) {
-                    elem.addEventListener(evnt, fn, false);
-                }
-                else if (elem.attachEvent) {
-                    elem.attachEvent("on" + evnt, fn);
-                }
-                else {
-                    elem[evnt] = fn;
-                }
-            }
-
-			self.createMask = function (el, format, opt) {
-			    el.__protoSui__.objMask = new Object();
-			}
-
-			self.textToInt = function (value) {
-			    var number = parseInt(value);
-
-			    if (!isNaN(number)) {
-			        return number;
-			    }
-			    else {
-			        return 0;
-			    }
-			}
-
-			self.trim = function (value) {
-                if(value == null || value == undefined || typeof value != 'string') { return ''; }
-
-			    return value.replace(/^[\s]+|[\s]+$/g, "");
-			}
-
-            self.isValidPhoneBr = function(value) {
-                return true;
-            }         
-        }
-
-        function $masks(fn) {
-            var self = this;
-
-            self.__protoSui__ = new Object();
-            this.__protoSui__.fn = fn;
-
-            self.time = function(selector) {
-                fn.createMask(selector, '00:00:00');
-            }          
-        }
-
-        function $extends(fn) {
-            var self = this;
-
-            self.__protoSui__ = new Object();
-    
-            self.__protoSui__.propertyValue = function(getValue) {
-                this.__protoSui__ = new Object();       
-                
-                this.__protoSui__.fn = fn;
-
-                Object.defineProperty(this.__protoSui__, 'property', {
-                    get: function () {
-                        return getValue();
-                    }
-                });
-
-                this.trim = function() {
-                    var obj = this.__protoSui__;
-                    
-                    return obj.fn.trim(obj.property);
-                }
-
-                this.isValidPhoneBr = function() {
-                    var obj = this.__protoSui__;
-
-                    return obj.fn.isValidPhoneBr(obj.property);
-                } 
-            }
-    
-            Object.defineProperty(self, 'propertyValue', {
-                get: function () {
-                    return this.__protoSui__.propertyValue;
-                }
-            });       
         }
 
         function formSuiJS(parentElement) {
@@ -749,6 +166,8 @@ if ([].forEach == undefined) {
                         item.validate();
                     }
                 });
+
+                return isOk;
             }
 
             Object.defineProperty(this, "$model", {
@@ -813,21 +232,21 @@ if ([].forEach == undefined) {
 
                     var typeValue = $self_sui.fn.trim(type.value);
 
-                    var funcName = findFunction($self_sui.components, 'create' + typeValue);
+                    var fnName = findFunction($self_sui.components, 'create' + typeValue);
 
-                    if (funcName == null) { throw 'This component type not exists [' + typeValue + ']'; }
+                    if (fnName == null) { throw 'This component type not exists [' + typeValue + ']'; }
 
-                    var typeObj = $self_sui.components[funcName](true);
+                    var typeObj = $self_sui.components[fnName](true);
 
                     if (typeObj != OBJECT_TYPE.SUBMIT) {
-                        if (formModel.__protoSui__[propName] != undefined) { throw 'This property already exists [' + propName + '][' + selector + ']'; }
+                        if (typeof( formModel.__protoSui__[propName] ) != 'undefined') { throw 'This property already exists [' + propName + '][' + selector + ']'; }
                     }
                     else {
-                        if (formModel.__protoSui__.$sub.__protoSui__[propName] != undefined) { throw 'This button already exists [' + propName + '][' + selector + ']'; }
+                        if (typeof( formModel.__protoSui__.$sub.__protoSui__[propName] ) != 'undefined') { throw 'This button already exists [' + propName + '][' + selector + ']'; }
                     }
 
                     if (typeObj == OBJECT_TYPE.SUBMIT) {
-                        var comp = $self_sui.components[funcName](null, elementComp);
+                        var comp = $self_sui.components[fnName](null, elementComp);
 
                         var oPropertyButtonModel = new propertyButtonModel(formModel, propName);
 
@@ -852,20 +271,20 @@ if ([].forEach == undefined) {
                         oPropertyButtonModel.addEvents();                             
                     }
                     else if (typeObj == OBJECT_TYPE.VALUE_TYPE) {
-                        var comp = $self_sui.components[funcName]();
+                        var comp = $self_sui.components[fnName]();
 
                         var oPropertyModel = new propertyModel(formModel, propName);
 
                         formModel.__protoSui__[propName] = oPropertyModel;
-                                
-                        formModel.__protoSui__.$fn[propName] = new funcPropertyModel(formModel.__protoSui__[propName]);
+                            
+                        formModel.__protoSui__.$fn[propName] = new fnPropertyModel(formModel.__protoSui__[propName]);
 
                         if (mask != null) {
-                            funcName = findFunction($self_sui.masks, mask.value);
+                            fnName = findFunction($self_sui.masks, mask.value);
 
-                            if (funcName == null) { throw 'This mask name not exists [' + mask.value + ']'; }
+                            if (fnName == null) { throw 'This mask name not exists [' + mask.value + ']'; }
 
-                            $self_sui.masks[funcName](comp);
+                            $self_sui.masks[fnName](comp);
 
                             attr.removeNamedItem('sui-mask');
                         }
@@ -903,13 +322,13 @@ if ([].forEach == undefined) {
                         $form.__protoSui__.$addProperty(oPropertyModel);
                     }
                     else if (typeObj == OBJECT_TYPE.CUSTOM_TYPE) {
-                        var comp = $self_sui.components[funcName]();
+                        var comp = $self_sui.components[fnName]();
 
                         var oPropertyCustomModel = new propertyCustomModel(formModel, propName);
 
                         formModel.__protoSui__[propName] = oPropertyCustomModel;
 
-                        formModel.__protoSui__.$fn[propName] = new funcPropertyArrayModel(formModel.__protoSui__[propName]);
+                        formModel.__protoSui__.$fn[propName] = new fnPropertyCustomModel(formModel.__protoSui__[propName]);
 
                         formModel.__protoSui__[propName].setElement(comp);
 
@@ -942,11 +361,11 @@ if ([].forEach == undefined) {
                         $form.__protoSui__.$addProperty(oPropertyCustomModel);
                     }
                     else if (typeObj == OBJECT_TYPE.REFERENCE_TYPE) {
-                        var comp = $self_sui.components[funcName](null, elementComp);
+                        var comp = $self_sui.components[fnName](null, elementComp);
 
                         formModel.__protoSui__[propName] = new propertyRefModel(formModel, propName);
 
-                        formModel.__protoSui__.$fn[propName] = new funcPropertyRefModel(formModel.__protoSui__[propName]);
+                        formModel.__protoSui__.$fn[propName] = new fnPropertyRefModel(formModel.__protoSui__[propName]);
 
                         formModel.__protoSui__[propName].setElement(comp);
                                 
@@ -972,13 +391,13 @@ if ([].forEach == undefined) {
                         }
                     }
                     else if (typeObj == OBJECT_TYPE.ARRAY_TYPE) {
-                        var comp = $self_sui.components[funcName]();
+                        var comp = $self_sui.components[fnName]();
 
                         var oPropertyModel = new propertyArrayModel(formModel, propName);
 
                         formModel.__protoSui__[propName] = oPropertyModel;
 
-                        formModel.__protoSui__.$fn[propName] = new funcPropertyArrayModel(formModel.__protoSui__[propName]);
+                        formModel.__protoSui__.$fn[propName] = new fnPropertyArrayModel(formModel.__protoSui__[propName]);
 
                         formModel.__protoSui__[propName].setElement(comp, elementComp.innerHTML);
 
@@ -1079,10 +498,10 @@ if ([].forEach == undefined) {
                 if (suiComp != null) {
                     buffer.push(itemEl);
 
-                    var funcName = findFunction($self_sui.components, 'create' + suiComp.value);
+                    var fnName = findFunction($self_sui.components, 'create' + suiComp.value);
 
-                    if (funcName != null) {
-                        var typeObj = $self_sui.components[funcName](true);
+                    if (fnName != null) {
+                        var typeObj = $self_sui.components[fnName](true);
 
                         isSearch = !(typeObj == OBJECT_TYPE.REFERENCE_TYPE || typeObj == OBJECT_TYPE.ARRAY_TYPE || typeObj == OBJECT_TYPE.FORM_CHILD);
                     }
@@ -1136,7 +555,7 @@ if ([].forEach == undefined) {
             while ((result = reg.exec(contentReg)) != null) {
                 var propName = result[0].replace('$sui.', '');
 
-                if (formModel.__protoSui__[propName] == undefined) {
+                if (typeof( formModel.__protoSui__[propName] ) == 'undefined') {
 
                     var oPropertyReadOnlyModel = new propertyReadOnlyModel(formModel, propName);
 
@@ -1166,7 +585,7 @@ if ([].forEach == undefined) {
             for (var iProp = 0; iProp < properties.length; iProp++) {
                 var propName = properties[iProp];
 
-                if (parentMdl.__protoSui__[propName] == undefined) {
+                if (typeof( parentMdl.__protoSui__[propName] ) == 'undefined') {
                     var oPropertyReadOnlyModel = new propertyReadOnlyModel(parentMdl, propName);
 
                     parentMdl.__protoSui__[propName] = oPropertyReadOnlyModel;
@@ -1384,7 +803,7 @@ if ([].forEach == undefined) {
 
         function propertyButtonModel(formModel, prop) {
             var self = this;
-            var obj = null;
+            var objFn = null;
 
             var el = null;
             var tbIn = 0;
@@ -1395,19 +814,13 @@ if ([].forEach == undefined) {
             this.setElement = function (elem) {
                 el = elem;
 
-                obj = {
-                    element: el
-                    , on: function(event, fn) {
-                        $self_sui.fn.addEvent(event, el, fn);
-                    }
-                    , focus: function() {
-                        self.focus();
-                    }
-                    , changeNextTabIndex: function(nextTabIndex) {
-                        ntTbIn = nextTabIndex;                                
-                    }
-                };
+                objFn = new baseFn(self);
             }
+
+            this.getElement = function () {
+                return el;
+            }
+
             this.focus = function () {
                 el.__protoSui__.setFocus();
             }
@@ -1420,7 +833,7 @@ if ([].forEach == undefined) {
             }
 
             this.get = function () {
-                return obj;
+                return objFn;
             }
 
             this.addEvents = function () {
@@ -1462,14 +875,8 @@ if ([].forEach == undefined) {
             this.onChangeValue = [];
         }
 
-        function funcPropertyModel(propertyModel) {
-            $self_sui.extends.propertyValue.call(this, function() {
-                return propertyModel.get();
-            });
-
-            this.changeNextTabIndex = function (newNextTabIndex) {
-                propertyModel.changeNextTabIndex(newNextTabIndex);
-            }
+        function fnPropertyModel(propertyModel) {
+            $self_sui.extends.propertyValue.call(this, propertyModel);
 
             this.getValueNoMask = function () {
                 return propertyModel.getNoMask();
@@ -1477,10 +884,6 @@ if ([].forEach == undefined) {
 
             this.setValueNoMask = function (v) {
                 propertyModel.setNoMask(v);
-            }
-
-            this.focus = function () {
-                propertyModel.focus();
             }
 
             this.clear = function () {
@@ -1499,15 +902,14 @@ if ([].forEach == undefined) {
 
             Object.defineProperty(this, 'Validation', setValidation);
         }
-                
-        funcPropertyModel.prototype = new $self_sui.extends.propertyValue();
-        funcPropertyModel.prototype.constructor = funcPropertyModel;
+
+        fnPropertyModel.prototype = new $self_sui.extends.propertyValue();
+        fnPropertyModel.prototype.constructor = fnPropertyModel;
 
         function propertyModel(formModel, prop) {
             var self = this;
 
             var el = null;
-            var tbIn = 0;
             var ntTbIn = 0;
 
             this.propertyName = prop;
@@ -1522,6 +924,10 @@ if ([].forEach == undefined) {
                         item(obj);
                     });
                 });
+            }
+
+            this.getElement = function() {
+                return el;
             }
 
             this.addEvents = function () {
@@ -1555,10 +961,6 @@ if ([].forEach == undefined) {
                 });
             }
 
-            this.focus = function () {
-                el.__protoSui__.setFocus();
-            }
-
             this.clear = function () {
                 el.__protoSui__.clear();
 
@@ -1568,7 +970,6 @@ if ([].forEach == undefined) {
             this.setTabIndex = function (tabIndex, nextTabIndex) {
                 el.__protoSui__.setTabIndex(tabIndex);
 
-                tbIn = tabIndex;
                 ntTbIn = nextTabIndex;
             }
 
@@ -1598,15 +999,16 @@ if ([].forEach == undefined) {
         propertyModel.prototype = new propertyValidation();
         propertyModel.prototype.constructor = propertyModel;
 
-        function funcPropertyCustomModel(propertyCustomModel) {
-            this.changeNextTabIndex = function (newNextTabIndex) {
-                propertyCustomModel.changeNextTabIndex(newNextTabIndex);
-            }
+        function fnPropertyCustomModel(propertyCustomModel) {
+            $self_sui.extends.propertyCustom.call(this, propertyModel);
 
-            this.focus = function () {
-                propertyCustomModel.focus();
+            this.removeValidationMessage = function() {
+                propertyCustomModel.removeValidationMessage();
             }
         }
+
+        fnPropertyCustomModel.prototype = new $self_sui.extends.propertyCustom();
+        fnPropertyCustomModel.prototype.constructor = fnPropertyCustomModel;
 
         function propertyCustomModel(formModel, prop) {
             var self = this;
@@ -1629,16 +1031,16 @@ if ([].forEach == undefined) {
                 });
             }
 
+            this.getElement = function() {
+                return el;
+            }
+
             this.get = function () {
                 return el.__protoSui__.dataBound;
             }
 
             this.set = function (v) {
                 throw 'This property is read only'
-            }
-
-            this.focus = function () {
-                el.__protoSui__.setFocus();
             }
 
             this.setTabIndex = function (tabIndex, nextTabIndex) {
@@ -1658,15 +1060,12 @@ if ([].forEach == undefined) {
         propertyCustomModel.prototype = new propertyValidation();
         propertyCustomModel.prototype.constructor = propertyCustomModel;
 
-        function funcPropertyRefModel(propertyRefModel) {
-            this.changeNextTabIndex = function (newNextTabIndex) {
-                propertyRefModel.changeNextTabIndex(newNextTabIndex);
-            }
-
-            this.focus = function () {
-                propertyRefModel.focus();
-            }
+        function fnPropertyRefModel(propertyRefModel) {
+            baseFn.call(this, propertyRefModel);
         }
+
+        fnPropertyRefModel.prototype = new baseFn();
+        fnPropertyRefModel.prototype.constructor = fnPropertyRefModel;
 
         function propertyRefModel(formModel, prop) {
             var self = this;
@@ -1696,8 +1095,8 @@ if ([].forEach == undefined) {
                 });
             }
 
-            this.focus = function () {
-                el.__protoSui__.setFocus();
+            this.getElement = function() {
+                return el;
             }
 
             this.setTabIndex = function (tabIndex, nextTabIndex) {
@@ -1739,15 +1138,12 @@ if ([].forEach == undefined) {
             this.onChangeValue = [];
         }
 
-        function funcPropertyArrayModel(propertyArrayModel) {
-            this.changeNextTabIndex = function (newNextTabIndex) {
-                propertyArrayModel.changeNextTabIndex(newNextTabIndex);
-            }
-
-            this.focus = function () {
-                propertyArrayModel.focus();
-            }
+        function fnPropertyArrayModel(propertyArrayModel) {
+            baseFn.call(this, propertyArrayModel);
         }
+
+        fnPropertyArrayModel.prototype = new baseFn();
+        fnPropertyArrayModel.prototype.constructor = fnPropertyArrayModel;
 
         function propertyArrayModel(formModel, prop) {
             var self = this;
@@ -1807,8 +1203,8 @@ if ([].forEach == undefined) {
                 });
             }
 
-            this.focus = function () {
-                el.__protoSui__.setFocus();
+            this.getElement = function() {
+                return el;
             }
 
             this.setTabIndex = function (tabIndex, nextTabIndex) {
@@ -1850,6 +1246,21 @@ if ([].forEach == undefined) {
                 this.update = function (predicate, result) {
                     elementArray.__protoSui__.update(predicate, result);
                 }
+
+                Object.defineProperty(this, 'count', {
+                    get: function () {
+                        return elementArray.__protoSui__.length();
+                    }
+                });
+
+                Object.defineProperty(this, 'dataSource', {
+                    get: function () {
+                        return elementArray.__protoSui__.getDataSource();
+                    }
+                    , set: function (v) {
+                        elementArray.__protoSui__.setDataSource(v);
+                    }
+                });
             }
 
             this.onChangeValue = [];
@@ -1939,7 +1350,7 @@ if ([].forEach == undefined) {
             }
 
             this.get = function (index) {
-                if (index < options.length) {
+                if (index < options.length()) {
                     return options.getItem(index);
                 }
                 else {
@@ -1948,7 +1359,7 @@ if ([].forEach == undefined) {
             }
 
             this.removeAt = function (index) {
-                if (index < options.length) {
+                if (index < options.length()) {
                     return options.removeAt(index);
                 }
                 else {
@@ -1958,7 +1369,7 @@ if ([].forEach == undefined) {
 
             this.remove = function (predicate) {
                 if (predicate != null) {
-                    for (var index = options.length - 1; index >= 0; index--) {
+                    for (var index = options.length() - 1; index >= 0; index--) {
                         var item = options.getItem(index);
 
                         if (predicate(item)) {
@@ -1972,7 +1383,7 @@ if ([].forEach == undefined) {
                 var array = [];
 
                 if (predicate != null) {
-                    for (var index = 0; index < options.length; index++) {
+                    for (var index = 0; index < options.length(); index++) {
                         var item = options.getItem(index);
 
                         if (predicate(item)) {
@@ -1981,7 +1392,7 @@ if ([].forEach == undefined) {
                     }
                 }
                 else {
-                    for (var index = 0; index < options.length; index++) {
+                    for (var index = 0; index < options.length(); index++) {
                         var item = options.getItem(index);
 
                         array.push(item);
@@ -1993,7 +1404,7 @@ if ([].forEach == undefined) {
 
             this.update = function (predicate, result) {
                 if (predicate != null) {
-                    for (var index = 0; index < options.length; index++) {
+                    for (var index = 0; index < options.length(); index++) {
                         var item = options.getItem(index);
 
                         if (predicate(item)) {
@@ -2002,7 +1413,7 @@ if ([].forEach == undefined) {
                     }
                 }
                 else {
-                    for (var index = 0; index < options.length; index++) {
+                    for (var index = 0; index < options.length(); index++) {
                         var item = options.getItem(index);
 
                         result(item);
@@ -2010,15 +1421,864 @@ if ([].forEach == undefined) {
                 }
             }
 
+            Object.defineProperty(this, 'count', {
+                get: function () {
+                    return options.length();
+                }
+            });
+
             Object.defineProperty(this, 'dataSource', {
                 get: function () {
                     return options.getDataSource();
                 }
                 , set: function (v) {
-                    throw 'This property is read only'
+                    options.setDataSource(v);
                 }
             });
         }
+
+        function componentClass(classList) {
+            this.add = function (args) {
+                classList.add(args);        
+            }
+
+            this.exists = function (className) {
+                return classList.contains(className);        
+            }
+
+            this.get = function () {
+                return classList;
+            }
+
+            this.get = function (index) {
+                return classList.item(index);
+            }
+
+            this.remove = function (args) {
+                classList.remove(args);        
+            }
+
+            this.removeAt = function (index) {
+                var iE = classList.item(index);
+
+                if (iE != null && iE != undefined) {
+                    classList.remove(iE);        
+                }
+            }
+
+            this.switchClass = function (newClass, oldClass) {
+                classList.remove(oldClass);
+                classList.add(newClass);        
+            };
+        }
+
+        function checkClassList() {
+            if (typeof (document.body.classList) == 'undefined') {
+                function $classList(el) {
+                    this.add = function (args) {
+                        var className = el.className;
+
+                        for (var i = 0; i < arguments.length; i++) {
+                            className = className.concat(' ', arguments[i]);
+                        }
+
+                        el.className = className;
+                    }
+                }
+
+                Object.defineProperty(HTMLElement.prototype, 'classList', {
+                    get: function () {
+                        return new $classList(this);
+                    }
+                });
+            }
+        }
+
+        function $components(fn) {
+            var self = this;
+
+            self.__protoSui__ = new Object();
+            this.__protoSui__.fn = fn;
+
+            self.createForm = function (isIni) {
+                var type = OBJECT_TYPE.FORM_CHILD;
+
+                if (isIni) { return type; }
+            }
+
+            self.createButton = function (isIni, element) {
+                var type = OBJECT_TYPE.SUBMIT;
+
+                if (isIni) { return type; }
+
+                var el = element;
+                el.__protoSui__ = new Object();
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }
+
+			    return el;
+            }
+            
+            self.createSelect = function (isIni) {
+                var type = OBJECT_TYPE.CUSTOM_TYPE;
+
+                if (isIni) { return type; }    
+                
+                var el = document.createElement('SELECT');
+
+                el.__protoSui__ = new Object();
+                el.__protoSui__.options = new Object();
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+                $self_sui.fn.addEvent('change', el, function (e) {
+                    triggerValueChanged();
+                });
+
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }
+
+                el.__protoSui__.valueChanged = [];
+
+                function triggerValueChanged() {
+                    if (el.__protoSui__.valueChanged.length > 0) {
+                        el.__protoSui__.valueChanged.forEach(function (item, index) {
+                            item(el.__protoSui__.options.getItem());
+                        });
+                    }
+                }
+
+                el.__protoSui__.options.length = function() {
+                    return el.options.length; 
+                }
+
+                el.__protoSui__.options.getSelectedIndex = function() {
+                    return el.selectedIndex; 
+                }
+
+                el.__protoSui__.options.getText = function() {
+                    return el.selectedOptions[el.selectedIndex].text;
+                }
+
+                el.__protoSui__.options.getValue = function() {
+                    return el.selectedOptions[el.selectedIndex].value;
+                }
+
+                el.__protoSui__.options.setSelectedIndex = function(index) {
+                    el.options[index].selected = true;
+                }
+
+                el.__protoSui__.options.setText = function(text) {
+                    for (var i = 0; i < el.options.length; i++) {
+                        if (el.options[i].text == text) {
+                            el.options[i].selected = true;
+                            break;
+                        }
+                    }
+                }
+
+                el.__protoSui__.options.setValue = function(value) {
+                    for (var i = 0; i < el.options.length; i++) {
+                        if (el.options[i].value == value) {
+                            el.options[i].selected = true;
+                            break;
+                        }
+                    }
+                }
+
+                el.__protoSui__.options.getItem = function() {
+                    return el.selectedOptions[el.selectedIndex].__protoSui__.dataBoundItem;
+                }
+
+                el.__protoSui__.options.add = function(text, value, tag) {
+                    var option = document.createElement('OPTION');
+
+                    option.text = text;
+                    option.value = value;
+                    
+                    option.__protoSui__ = new Object();
+
+                    option.__protoSui__.dataBoundItem = new Object();
+                    option.__protoSui__.dataBoundItem.text = text;
+                    option.__protoSui__.dataBoundItem.value = value;
+                    option.__protoSui__.dataBoundItem.tag = tag;
+
+                    el.appendChild(option);
+                }
+
+                el.__protoSui__.options.getItem = function(index) {
+                    return el.options[index].__protoSui__.dataBoundItem;
+                }
+
+                el.__protoSui__.options.removeAt = function(index) {
+                     el.removeChild(el.options[index]);
+                }
+
+                el.__protoSui__.options.getDataSource = function() {
+                    var items = [];
+
+                    for (var i = 0; i < el.options.length; i++) {
+                        items.push(el.options[i].__protoSui__.dataBoundItem);
+                    }
+
+                    return items; 
+                }
+
+                el.__protoSui__.options.setDataSource = function(list) {
+                    for (var i = 0; i < list.length; i++) {
+                        var text = list[i]['text'];
+                        var value = list[i]['value'];
+                        var tag = list[i]['tag'];
+
+                        el.__protoSui__.options.add(text, value, tag);
+                    }
+                }
+
+                el.__protoSui__.dataBound = new selectClass(el);
+
+			    return el;                             
+            }
+
+            self.createSelectMultiple = function (isIni) {
+                var type = OBJECT_TYPE.CUSTOM_TYPE;
+
+                if (isIni) { return type; }    
+                
+                var el = document.createElement('SELECT');
+
+                el.setAttribute('multiple', '');
+
+                el.__protoSui__ = new Object();
+                el.__protoSui__.options = new Object();
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+                
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }
+
+                el.__protoSui__.valueChanged = [];
+
+                function triggerValueChanged() {
+                    if (el.__protoSui__.valueChanged.length > 0) {
+                        el.__protoSui__.valueChanged.forEach(function (item, index) {
+                            item(el.__protoSui__.options.getItem());
+                        });
+                    }
+                }
+
+                el.__protoSui__.options.length = function() {
+                    return el.options.length; 
+                }
+
+                el.__protoSui__.options.getSelectedItems = function() {
+                    var items = [];
+
+                    for (var i = 0; i < el.options.length; i++) {
+                        if (el.options[i].selected) {                          
+                            items.push(el.options[i].__protoSui__.dataBoundItem);
+                        }
+                    }
+
+                    return items; 
+                }
+
+                el.__protoSui__.options.add = function(text, value, tag) {
+                    var option = document.createElement('OPTION');
+
+                    option.text = text;
+                    option.value = value;
+                    
+                    option.__protoSui__ = new Object();
+
+                    option.__protoSui__.dataBoundItem = new Object();
+                    option.__protoSui__.dataBoundItem.text = text;
+                    option.__protoSui__.dataBoundItem.value = value;
+                    option.__protoSui__.dataBoundItem.tag = tag;
+
+                    Object.defineProperty(option.__protoSui__.dataBoundItem, 'selected', {
+                        get: function () { 
+                            return option.selected; 
+                        } 
+                        , set: function (v) {
+                            option.selected = v;
+                        }
+                    });
+
+                    el.appendChild(option);
+                }
+
+                el.__protoSui__.options.getItem = function(index) {
+                    return el.options[index].__protoSui__.dataBoundItem;
+                }
+
+                el.__protoSui__.options.removeAt = function(index) {
+                     el.removeChild(el.options[index]);
+                }
+
+                el.__protoSui__.options.getDataSource = function() {
+                    var items = [];
+
+                    for (var i = 0; i < el.options.length; i++) {
+                        items.push(el.options[i].__protoSui__.dataBoundItem);
+                    }
+
+                    return items; 
+                }
+
+                el.__protoSui__.dataBound = new selectClass(el, true);
+
+			    return el;                             
+            }
+
+            self.createText = function (isIni) {
+                var type = OBJECT_TYPE.VALUE_TYPE;
+
+                if (isIni) { return type; }
+
+                var el = document.createElement('INPUT');
+                var valueOf = null;
+
+                el.type = 'text';
+                el.__protoSui__ = new Object();
+
+                el.__protoSui__.objectType = function () {
+                    return type;
+                }
+
+                el.__protoSui__.getNewValue = function () {
+                    return el.value;
+                }
+
+                el.__protoSui__.getValue = function () {
+                    return valueOf;
+                }
+
+                el.__protoSui__.setValue = function (v) {
+                    valueOf = v;
+                    el.value = v;
+
+                    triggerValueChanged();
+                }
+
+                el.__protoSui__.getValueNoMask = function () {
+                    return valueOf;
+                }
+
+                el.__protoSui__.setValueNoMask = function (v) {
+                    valueOf = v;
+                    el.value = v;
+
+                    triggerValueChanged();
+                }
+
+                el.__protoSui__.setFocus = function () {
+                    el.focus();
+                }
+
+                el.__protoSui__.clear = function () {
+                    el.__protoSui__.setValue('');
+                }
+
+                el.__protoSui__.setTabIndex = function (tabIndex) {
+                    el.tabIndex = tabIndex;
+                }
+
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }
+
+                el.__protoSui__.valueChanged = [];
+
+                function triggerValueChanged() {
+                    if (el.__protoSui__.valueChanged.length > 0) {
+                        el.__protoSui__.valueChanged.forEach(function (item, index) {
+                            item({ value: el.value, valueNoMask: el.value });
+                        });
+                    }
+                }
+
+                return el;
+            }
+			
+            self.createRepeater = function (isIni) {
+			    var type = OBJECT_TYPE.ARRAY_TYPE;
+
+			    if (isIni) { return type; }
+
+			    var el = document.createElement('DIV');
+			    var valueOf = [];
+
+			    el.__protoSui__ = new Object();
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.toString = function () {
+			        return valueOf.length + ' element' + (valueOf.length > 0 ? 's' : '');
+			    }
+
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }
+
+			    el.__protoSui__.length = function () {
+			        return valueOf.length;
+			    }
+
+			    el.__protoSui__.createItem = function () {
+			        var model = el.__protoSui__.createModel();
+
+			        model.__idm__ = new Object();
+			        model.__idm__.$id = '$isok$'
+
+			        return model;
+			    }
+
+			    el.__protoSui__.add = function (item) {
+			        if (item.__idm__.$id != '$isok$') { throw 'Use the method createItem to create a new object'; }
+
+			        valueOf.push(item);
+
+			        el.appendChild(el.__protoSui__.getElementOfModel(item));
+
+			        triggerValueChanged(item);
+			    }
+
+                el.__protoSui__.getDataSource = function () {
+                    var items = [];
+
+                    for (var i = 0; i < valueOf.length; i++) {
+                        items.push(valueOf[index]);
+                    }
+
+                    return items;                     
+                }
+
+                el.__protoSui__.setDataSource = function (list) {
+                    for (var index = 0; index < list.length; index++) {
+                        var mdl = el.__protoSui__.createItem();
+
+                        for (var propList in list[index]) {
+                            if (typeof( mdl[propList] ) != 'undefined') {
+                                mdl[propList] = list[index][propList];
+                            }                            
+                        }
+
+                        el.__protoSui__.add(mdl)
+                    }                    
+                }
+
+			    el.__protoSui__.get = function (index) {
+                    if(index < valueOf.length) {
+                        return valueOf[index];
+                    }
+                    else {
+                        throw 'index out of range';
+                    }
+			    }
+
+			    el.__protoSui__.removeAt = function (index) {
+                    if(index < valueOf.length) {
+			            var item = valueOf[index];
+
+			            valueOf.splice(index, 1);
+
+			            el.removeChild(el.__protoSui__.getElementOfModel(item));
+
+			            triggerValueChanged(item);
+                    }
+                    else {
+                        throw 'index out of range';
+                    }
+			    }
+
+			    el.__protoSui__.remove = function (predicate) {
+			        if (predicate != null) {
+			            for (var index = valueOf.length - 1; index >= 0; index--) {
+			                if (predicate(valueOf[index])) {
+			                    var item = valueOf[index];
+
+			                    valueOf.splice(index, 1);
+
+			                    el.removeChild(el.__protoSui__.getElementOfModel(item));
+
+			                    triggerValueChanged(item);
+			                }
+			            }
+			        }
+			    }
+
+			    el.__protoSui__.where = function (predicate) {
+			        var array = [];
+
+			        if (predicate != null) {
+			            for (var index = 0; index < valueOf.length; index++) {
+			                if (predicate(valueOf[index])) {
+			                    array.push(valueOf[index]);
+			                }
+			            }
+			        }
+			        else {
+			            for (var index = 0; index < valueOf.length; index++) {
+			                array.push(valueOf[index]);
+			            }
+			        }
+
+			        return array;
+			    }
+
+			    el.__protoSui__.update = function (predicate, result) {
+			        if (predicate != null) {
+			            for (var index = 0; index < valueOf.length; index++) {
+			                if (predicate(valueOf[index])) {
+			                    result(valueOf[index]);
+			                }
+			            }
+			        }
+			        else {
+			            for (var index = 0; index < valueOf.length; index++) {
+			                result(valueOf[index]);
+			            }
+			        }
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+			    el.__protoSui__.valueChanged = [];
+			    el.__protoSui__.createModel = null;
+			    el.__protoSui__.getElementOfModel = null;
+
+			    function triggerValueChanged(itemValue) {
+			        if (el.__protoSui__.valueChanged.length > 0) {
+			            el.__protoSui__.valueChanged.forEach(function (item, index) {
+			                item(itemValue);
+			            });
+			        }
+			    }
+
+			    return el;
+			}
+			
+            self.createCustom = function (isIni, element) {
+			    var type = OBJECT_TYPE.REFERENCE_TYPE;
+
+			    if (isIni) { return type; }
+
+			    var el = element;
+                el.__protoSui__ = new Object();
+			    el.__protoSui__.value = new Object();
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.getValue = function () {
+			        return el.__protoSui__.value;
+			    }
+
+			    el.__protoSui__.setValue = function (v) {
+			        el.__protoSui__.value = v;
+
+			        triggerValueChanged();
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }
+
+			    el.__protoSui__.valueChanged = [];
+
+			    function triggerValueChanged() {
+			        if (el.__protoSui__.valueChanged.length > 0) {
+			            el.__protoSui__.valueChanged.forEach(function (item, index) {
+			                item(el.__protoSui__.value);
+			            });
+			        }
+			    }
+
+			    return el;
+			}
+        }
+
+        function $fn() {
+            var self = this;
+
+            self.__protoSui__ = new Object();
+
+            self.addEvent = function (evnt, elem, fn) {
+                if (elem.addEventListener) {
+                    elem.addEventListener(evnt, fn, false);
+                }
+                else if (elem.attachEvent) {
+                    elem.attachEvent("on" + evnt, fn);
+                }
+                else {
+                    elem[evnt] = fn;
+                }
+            }
+
+			self.createMask = function (el, format, opt) {
+			    el.__protoSui__.objMask = new Object();
+			}
+
+			self.textToInt = function (value) {
+			    var number = parseInt(value);
+
+			    if (!isNaN(number)) {
+			        return number;
+			    }
+			    else {
+			        return 0;
+			    }
+			}
+
+			self.trim = function (value) {
+                if(value == null || value == undefined || typeof value != 'string') { return ''; }
+
+			    return value.replace(/^[\s]+|[\s]+$/g, "");
+			}
+
+            self.isValidPhoneBr = function(value) {
+                return true;
+            }         
+        }
+
+        function $masks(fn) {
+            var self = this;
+
+            self.__protoSui__ = new Object();
+            this.__protoSui__.fn = fn;
+
+            self.time = function(selector) {
+                fn.createMask(selector, '00:00:00');
+            }          
+        }
+
+        function $extends(fn) {
+            var self = this;
+
+            self.__protoSui__ = new Object();
+    
+            var fnPropVal = self.__protoSui__.propertyValue = function(propertyModel) {
+                baseFn.call(this, propertyModel);
+
+                this.__protoSui__ = new Object();       
+                
+                this.__protoSui__.fn = fn;
+
+                Object.defineProperty(this.__protoSui__, 'property', {
+                    get: function () {
+                        return propertyModel.get();
+                    }
+                });
+
+                this.trim = function() {
+                    var obj = this.__protoSui__;
+                    
+                    return obj.fn.trim(obj.property);
+                }
+
+                this.isValidPhoneBr = function() {
+                    var obj = this.__protoSui__;
+
+                    return obj.fn.isValidPhoneBr(obj.property);
+                } 
+            }
+
+            var fnPropCus = self.__protoSui__.propertyCustom = function(propertyModel) {
+                baseFn.call(this, propertyModel);
+
+                this.__protoSui__ = new Object();       
+                
+                this.__protoSui__.fn = fn;
+
+                Object.defineProperty(this.__protoSui__, 'property', {
+                    get: function () {
+                        return propertyModel.get();
+                    }
+                });
+            }
+
+            Object.defineProperty(self, 'propertyValue', {
+                get: function () {
+                    return this.__protoSui__.propertyValue;
+                }
+            });     
+            
+            Object.defineProperty(self, 'propertyCustom', {
+                get: function () {
+                    return this.__protoSui__.propertyCustom;
+                }
+            });               
+
+            fnPropVal.prototype = new baseFn();
+            fnPropVal.prototype.constructor = fnPropVal;
+
+            fnPropCus.prototype = new baseFn();
+            fnPropCus.prototype.constructor = fnPropCus;
+        }
+
+        function baseFn(property) {
+            this.changeNextTabIndex = function (newNextTabIndex) {
+                property.changeNextTabIndex(newNextTabIndex);
+            }
+
+            this.focus = function () {
+                property.getElement().__protoSui__.setFocus();
+            }
+
+            this.on = function(event, fn) {
+                $self_sui.fn.addEvent(event, property.getElement(), fn);
+            }
+
+            Object.defineProperty(this, 'attributes', {
+                get: function () {
+                    return property.getElement().__protoSui__.getAttributes(); 
+                }
+            });
+
+            Object.defineProperty(this, 'style', {
+                get: function () {
+                    return property.getElement().__protoSui__.getStyle();
+                }
+            });
+
+            Object.defineProperty(this, 'class', {
+                get: function () {
+                    return property.getElement().__protoSui__.getClassList();
+                }
+            });
+
+            Object.defineProperty(this, 'events', {
+                get: function () {
+                    return property.getElement().__protoSui__.getEvents(); 
+                }
+            });
+        }
+
     }
     
     win.__protoSui__ = new Object();
