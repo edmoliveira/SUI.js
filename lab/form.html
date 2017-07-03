@@ -52,8 +52,7 @@
             }                           
         </style>
         <script>
-            //https://microsoft.github.io/monaco-editor/index.html
-                        
+            //https://microsoft.github.io/monaco-editor/index.html                     
 
             $sui.extends.propertyValue.prototype.isValidFirstName = function () {
                 var obj = this.__protoSui__;
@@ -62,6 +61,37 @@
             }
 
             $sui.ready(function () {
+                $sui.loadForm('userLogin', function ($form, $model) {
+                    $model.legend = "Login";
+                    $model.countryList.dataSource = [
+                        { text: 'Canada', value: 1 }
+                        , { text: 'Spanish', value: 2 }
+                        , { text: 'Brazil', value: 3 }
+                    ]
+
+                    $model.countryList.get(0).radio.check();
+
+                    $model.$email.Validation = function (validForm) {
+                        if ($model.$email.trim() == '') {
+                            validForm.addWarning('Email is required');
+                        }
+                    };
+
+                    $model.$password.Validation = function (validForm) {
+                        if ($model.$password.trim() == '') {
+                            validForm.addWarning('password is required');
+                        }
+                    };
+
+                    $model._login.on('click', function () {
+                        if ($form.validateForm()) {
+                            $model.$email.clear();
+                            $model.$password.clear();
+                            $model.$email.focus();
+                        }
+                    });
+                });
+
                 $sui.loadForm('caduser', function ($form, $model) {
                     $model.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
                     $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
@@ -133,7 +163,7 @@
                     $model.phone = '';
 
                     $model._addContact.on('click', function () {
-                        if ($form.ValidateForm()) {
+                        if ($form.validateForm()) {
                             var objList = $form.$parentForm.$model.contactList;
 
                             var mdl = objList.createItem();
@@ -334,8 +364,45 @@
             </div>
         </div>
 
-        <div sui-form="searchuser">
-
+        <div sui-form="userLogin" style="border:1px solid #F4F4F4; width:290px;box-shadow: 6px 6px 5px 0px rgba(192,192,192,0.75);">
+            <h2 style="font-family: Arial, Helvetica, sans-serif; color: #0099FF; font-weight: bold"
+                sui-value="$sui.legend">
+            </h2>
+            <div>
+                <div class="cell cellLabel">
+                    Email: 
+                </div>
+                <div class="cell cellInput">
+                    <tt sui-comp = "text" sui-prop="email" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                </div>
+            </div>      
+            <div>
+                <div class="cell cellLabel">
+                    Password: 
+                </div>
+                <div class="cell cellInput">
+                    <tt sui-comp = "password" sui-prop="password" sui-tabIndex="1" sui-nextTabIndex="2" ></tt>
+                </div>
+            </div> 
+            <div>
+                <div class="cell cellLabel">
+                    Country: 
+                </div>
+                <div class="cell cellInput">
+                    <tt sui-comp="repeater" sui-prop="countryList" sui-tabIndex="7" sui-nextTabIndex="0">
+                        <tt sui-comp = "hidden" sui-prop="value" ></tt>
+                        <tt sui-comp = "radio" sui-prop="radio" sui-group="countries" ></tt>
+                        <label sui-value="$sui.text" style="vertical-align:top;"></label>
+                    </tt>
+                </div>
+            </div> 
+            <div style="padding:10px;text-align:right">
+                <button sui-comp="button" sui-prop="login" sui-tabIndex="3" sui-nextTabIndex="4" style="width:150px;height:40px;margin-right:10px;">Login</button>
+            </div>              
         </div>
+
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
     </body>
 </html>

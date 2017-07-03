@@ -10,6 +10,11 @@
     100% {display: table-row;opacity:1}
 }
 
+.sui-cont-Val
+{
+    display:inline-block;
+}
+
 .sui-valHide-label
 {
     display:none;
