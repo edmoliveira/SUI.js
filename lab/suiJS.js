@@ -91,7 +91,7 @@ if (typeof( [].forEach ) == 'undefined') {
             });
         }
 
-        $self_sui.loadForm = function (selector, action) {
+        $self_sui.loadForm = function (selector, controllerName, action) {
             checkClassList();
 
             var elementCollection = document.querySelectorAll('[sui-form="' + selector + '"]');
@@ -112,7 +112,7 @@ if (typeof( [].forEach ) == 'undefined') {
                         }
                     });
 
-                    action(oFormSuiJS, oFormSuiJS.$model);
+                    action(oFormSuiJS, oFormSuiJS.$viewModel);
                 }
             }
         }
@@ -178,7 +178,7 @@ if (typeof( [].forEach ) == 'undefined') {
                 return isOk;
             }
 
-            Object.defineProperty(this, "$model", {
+            Object.defineProperty(this, "$viewModel", {
                 get: function () {
                     return this.__protoSui__.$getprotoM();
                 }
@@ -338,7 +338,7 @@ if (typeof( [].forEach ) == 'undefined') {
                             comp.setAttributeNode(elAttribute);
                         }
 
-                        if(comp.__protoSui__.HasRemoveValidation)
+                        if(comp.__protoSui__.CanRemoveValidation)
                         {
                             elementComp.parentNode.replaceChild(comp, elementComp);                            
                         }
@@ -390,7 +390,7 @@ if (typeof( [].forEach ) == 'undefined') {
                             comp.setAttributeNode(elAttribute);
                         }
                         
-                        if(comp.__protoSui__.HasRemoveValidation)
+                        if(comp.__protoSui__.CanRemoveValidation)
                         {
                             elementComp.parentNode.replaceChild(comp, elementComp);                            
                         }
@@ -1056,7 +1056,7 @@ if (typeof( [].forEach ) == 'undefined') {
         propertyModel.prototype.constructor = propertyModel;
 
         function fnPropertyCustomModel(propertyCustomModel) {
-            $self_sui.extends.propertyCustom.call(this, propertyModel);
+            $self_sui.extends.propertyCustom.call(this, propertyCustomModel);
 
             this.removeValidationMessage = function() {
                 propertyCustomModel.removeValidationMessage();
@@ -1080,11 +1080,13 @@ if (typeof( [].forEach ) == 'undefined') {
 
                 el = elem;
 
-                el.__protoSui__.valueChanged.push(function (obj) {
-                    self.onChangeValue.forEach(function (item, index) {
-                        item(obj);
+                if (typeof( el.__protoSui__.valueChanged ) != 'undefined' && el.__protoSui__.valueChanged != null) {
+                    el.__protoSui__.valueChanged.push(function (obj) {
+                        self.onChangeValue.forEach(function (item, index) {
+                            item(obj);
+                        });
                     });
-                });
+                }
             }
 
             this.getElement = function() {
@@ -1921,7 +1923,7 @@ if (typeof( [].forEach ) == 'undefined') {
                 function triggerValueChanged() {
                     if (el.__protoSui__.valueChanged.length > 0) {
                         el.__protoSui__.valueChanged.forEach(function (item, index) {
-                            item(el.__protoSui__.options.getItem());
+                            item(el.checked);
                         });
                     }
                 }                
@@ -1930,24 +1932,134 @@ if (typeof( [].forEach ) == 'undefined') {
                     triggerValueChanged();
                 });
 
-                function radioObject () {
-                    Object.defineProperty(this, 'isChecked', {
-                        get: function () { 
-                            return el.checked; 
-                        } 
-                    });
+                el.__protoSui__.dataBound = new checkObject(el);
 
-                    this.check = function() { 
-                        el.checked = true;
+			    return el;                             
+            }
+
+            self.createCheckBox = function (isIni) {
+                var type = OBJECT_TYPE.CUSTOM_TYPE;
+
+                if (isIni) { return type; }    
+                
+                var el = document.createElement('input');
+
+                el.type = 'checkbox';
+                el.__protoSui__ = new Object();
+
+			    el.__protoSui__.setGroupName = function (name) {
+			        el.name = name;
+			    }
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }
+
+                el.__protoSui__.valueChanged = [];
+
+                function triggerValueChanged() {
+                    if (el.__protoSui__.valueChanged.length > 0) {
+                        el.__protoSui__.valueChanged.forEach(function (item, index) {
+                            item(el.checked);
+                        });
                     }
+                }                
 
-                    this.uncheck = function() { 
-                        el.checked = false;
+                $self_sui.fn.addEvent('change', el, function (e) {
+                    triggerValueChanged();
+                });
+
+                el.__protoSui__.dataBound = new checkObject(el);
+
+			    return el;                             
+            }
+
+            self.createImg = function (isIni) {
+                var type = OBJECT_TYPE.CUSTOM_TYPE;
+
+                if (isIni) { return type; }    
+                
+                var el = document.createElement('IMG');
+
+                el.__protoSui__ = new Object();
+
+                el.__protoSui__.CanRemoveValidation = true;
+
+			    el.__protoSui__.setGroupName = function (name) {
+			        el.name = name;
+			    }
+
+			    el.__protoSui__.objectType = function () {
+			        return type;
+			    }
+
+			    el.__protoSui__.setFocus = function () {
+			        el.focus();
+			    }
+
+			    el.__protoSui__.setTabIndex = function (tabIndex) {
+			        el.tabIndex = tabIndex;
+			    }
+
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }   
+
+                el.__protoSui__.dataBound = new Object();
+
+                Object.defineProperty(el.__protoSui__.dataBound, 'src', {
+                    get: function () { 
+                        return el.src; 
+                    } 
+                    , set: function(v) {
+                        el.src = v;
                     }
-                }
+                });
 
-                el.__protoSui__.dataBound = new radioObject();
-
+                Object.defineProperty(el.__protoSui__.dataBound, 'alt', {
+                    get: function () { 
+                        return el.alt; 
+                    } 
+                    , set: function(v) {
+                        el.alt = v;
+                    }
+                });
 
 			    return el;                             
             }
@@ -2121,6 +2233,88 @@ if (typeof( [].forEach ) == 'undefined') {
                 return el;
             }
 
+			self.createTextarea = function (isIni) {
+                var type = OBJECT_TYPE.VALUE_TYPE;
+
+                if (isIni) { return type; }
+
+                var el = document.createElement('TEXTAREA');
+                var valueOf = null;
+
+                el.__protoSui__ = new Object();
+
+			    el.__protoSui__.setGroupName = function (name) {
+			        el.name = name;
+			    }
+
+                el.__protoSui__.objectType = function () {
+                    return type;
+                }
+
+                el.__protoSui__.getNewValue = function () {
+                    return el.value;
+                }
+
+                el.__protoSui__.getValue = function () {
+                    return valueOf;
+                }
+
+                el.__protoSui__.setValue = function (v) {
+                    valueOf = v;
+                    el.value = v;
+
+                    triggerValueChanged();
+                }
+
+                el.__protoSui__.getValueNoMask = function () {
+                    throw 'This component has no mask' ;
+                }
+
+                el.__protoSui__.setValueNoMask = function (v) {
+                    throw 'This component has no mask' ;
+                }
+
+                el.__protoSui__.setFocus = function () {
+                    el.focus();
+                }
+
+                el.__protoSui__.clear = function () {
+                    el.__protoSui__.setValue('');
+                }
+
+                el.__protoSui__.setTabIndex = function (tabIndex) {
+                    el.tabIndex = tabIndex;
+                }
+
+                el.__protoSui__.getEvents = function () {
+			        return null;
+			    }
+
+                el.__protoSui__.getAttributes = function () {
+			        return el.attributes;
+			    }
+
+                el.__protoSui__.getStyle = function () {
+			        return el.style;
+			    }
+
+                el.__protoSui__.getClassList = function () {
+			        return new componentClass(el.classList);
+			    }
+
+                el.__protoSui__.valueChanged = [];
+
+                function triggerValueChanged() {
+                    if (el.__protoSui__.valueChanged.length > 0) {
+                        el.__protoSui__.valueChanged.forEach(function (item, index) {
+                            item({ value: el.value });
+                        });
+                    }
+                }
+
+                return el;
+            }
+
             self.createHidden = function (isIni) {
                 var type = OBJECT_TYPE.VALUE_TYPE;
 
@@ -2136,7 +2330,7 @@ if (typeof( [].forEach ) == 'undefined') {
 			        el.name = name;
 			    }
 
-                el.__protoSui__.HasRemoveValidation = true;
+                el.__protoSui__.CanRemoveValidation = true;
 
                 el.__protoSui__.objectType = function () {
                     return type;
@@ -2249,12 +2443,12 @@ if (typeof( [].forEach ) == 'undefined') {
 			    }
 
 			    el.__protoSui__.createItem = function () {
-			        var model = el.__protoSui__.createModel();
+			        var viewModel = el.__protoSui__.createModel();
 
-			        model.__idm__ = new Object();
-			        model.__idm__.$id = '$isok$'
+			        viewModel.__idm__ = new Object();
+			        viewModel.__idm__.$id = '$isok$'
 
-			        return model;
+			        return viewModel;
 			    }
 
 			    el.__protoSui__.add = function (item) {
@@ -2609,6 +2803,21 @@ if (typeof( [].forEach ) == 'undefined') {
             });
         }
 
+        function checkObject (el) {
+            Object.defineProperty(this, 'isChecked', {
+                get: function () { 
+                    return el.checked; 
+                } 
+            });
+
+            this.check = function() { 
+                el.checked = true;
+            }
+
+            this.uncheck = function() { 
+                el.checked = false;
+            }
+        }
     }
     
     win.__protoSui__ = new Object();

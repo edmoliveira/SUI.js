@@ -54,54 +54,75 @@
         <script>
             //https://microsoft.github.io/monaco-editor/index.html                     
 
+
+
             $sui.extends.propertyValue.prototype.isValidFirstName = function () {
                 var obj = this.__protoSui__;
 
                 return obj.property != null && obj.fn.trim(obj.property).occur(' ') < 1;
             }
 
+            function userCtrl($base) {
+                $base.addfn(function (model) {
+
+                }, function () {
+                    this.email;
+                    this.password
+                });
+            }
+
             $sui.ready(function () {
-                $sui.loadForm('userLogin', function ($form, $model) {
-                    $model.legend = "Login";
-                    $model.countryList.dataSource = [
+                $sui.loadForm('userLogin', function ($form, $viewModel) {
+                    $viewModel.legend = "Login";
+                    $viewModel.countryList.dataSource = [
                         { text: 'Canada', value: 1 }
                         , { text: 'Spanish', value: 2 }
                         , { text: 'Brazil', value: 3 }
                     ]
 
-                    $model.countryList.get(0).radio.check();
+                    $viewModel.countryList.get(0).radio.check();
 
-                    $model.$email.Validation = function (validForm) {
-                        if ($model.$email.trim() == '') {
+                    $viewModel.titlePhoto.src = 'suiJS.png';
+                    $viewModel.titlePhoto.alt = 'form title';
+
+                    var st = $viewModel.$titlePhoto.style;
+
+                    st.width = '66px';
+                    st.height = '68px';
+                    st.marginLeft = '50%';
+                    st.transform = 'translate(-50%)';
+
+                    $viewModel.$email.Validation = function (validForm) {
+                        if ($viewModel.$email.trim() == '') {
                             validForm.addWarning('Email is required');
                         }
                     };
 
-                    $model.$password.Validation = function (validForm) {
-                        if ($model.$password.trim() == '') {
+                    $viewModel.$password.Validation = function (validForm) {
+                        if ($viewModel.$password.trim() == '') {
                             validForm.addWarning('password is required');
                         }
                     };
 
-                    $model._login.on('click', function () {
+                    $viewModel._login.on('click', function () {
                         if ($form.validateForm()) {
-                            $model.$email.clear();
-                            $model.$password.clear();
-                            $model.$email.focus();
+                            $viewModel.$email.clear();
+                            $viewModel.$password.clear();
+                            $viewModel.$email.focus();
                         }
                     });
-                });
+                }).loadCtrl(userCtrl);
 
-                $sui.loadForm('caduser', function ($form, $model) {
-                    $model.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
-                    $model.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
+                $sui.loadForm('caduser', function ($form, $viewModel) {
+                    $viewModel.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
+                    $viewModel.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
 
-                    $model.legendYourName = 'Your Name:';
-                    $model.firstName = 'George';
-                    $model.lastName = 'Washington';
-                    $model.wifeName = 'Martha Washington';
+                    $viewModel.legendYourName = 'Your Name:';
+                    $viewModel.firstName = 'George';
+                    $viewModel.lastName = 'Washington';
+                    $viewModel.wifeName = 'Martha Washington';
 
-                    $model.country.dataSource = [
+                    $viewModel.country.dataSource = [
                         { text: '--Choose--', value: -1 }
                         , { text: 'Canada', value: 1, tag: { moneyValue: '2.64'} }
                         , { text: 'United States of America', value: 2, tag: { moneyValue: '3.45'} }
@@ -109,39 +130,39 @@
                     ];
 
                     //text | value | tag
-                    $model.states.add('Connecticut', 1);
-                    $model.states.add('Hawaii', 2, { isIsland: true });
-                    $model.states.add('Idaho', 3);
+                    $viewModel.states.add('Connecticut', 1);
+                    $viewModel.states.add('Hawaii', 2, { isIsland: true });
+                    $viewModel.states.add('Idaho', 3);
 
-                    $model.parents.fatherName = 'Augustine Washington'
-                    $model.parents.motherName = 'Mary Ball Washington'
+                    $viewModel.parents.fatherName = 'Augustine Washington'
+                    $viewModel.parents.motherName = 'Mary Ball Washington'
 
-                    $model.parents.children.firstChild = 'Samuel Washington'
-                    $model.parents.children.secondChild = 'Lawrence Washington'
+                    $viewModel.parents.children.firstChild = 'Samuel Washington'
+                    $viewModel.parents.children.secondChild = 'Lawrence Washington'
 
                     var collection = [];
                     var positionName = ['Point Guard', 'Shooting Guard', 'Small forward', 'Power Forward', 'Post'];
                     var iPosition = 0;
 
                     for (var index = 0; index < 1000; index++) {
-                        var mdl = $model.team.createItem();
+                        var mdl = $viewModel.team.createItem();
 
                         mdl.id = index;
                         mdl.playerName = 'Player ' + index;
                         mdl.playerPosition = positionName[iPosition];
 
-                        $model.team.add(mdl);
+                        $viewModel.team.add(mdl);
 
                         iPosition++;
 
                         if (iPosition > 4) { iPosition = 0; }
                     }
 
-                    $model.team.update(function (item) { return item.id == '1' }, function (item) {
+                    $viewModel.team.update(function (item) { return item.id == '1' }, function (item) {
                         item.playerName = "Player *";
                     });
 
-                    $model.friends.dataSource = [
+                    $viewModel.friends.dataSource = [
                         { name: 'Friend1', description: 'job1' }
                         , { name: 'Friend2', description: 'job2' }
                         , { name: 'Friend3', description: 'job3' }
@@ -151,54 +172,64 @@
                         return true;
                     }
 
-                    contactForm($model.contact, $model.contact.$model);
+                    contactForm($viewModel.contact, $viewModel.contact.$viewModel);
 
-                    $model.$firstName.focus();
+                    $viewModel.$firstName.focus();
 
-                    $model.$contactList.class.add('repeater');
+                    $viewModel.$contactList.class.add('repeater');
                 });
 
-                function contactForm($form, $model) {
-                    $model.name = '';
-                    $model.phone = '';
+                function contactForm($form, $viewModel) {
+                    $viewModel.name = '';
+                    $viewModel.phone = '';
 
-                    $model._addContact.on('click', function () {
+                    $viewModel._addContact.on('click', function () {
                         if ($form.validateForm()) {
-                            var objList = $form.$parentForm.$model.contactList;
+                            var objList = $form.$parentForm.$viewModel.contactList;
 
                             var mdl = objList.createItem();
 
-                            mdl.name = $model.name;
-                            mdl.phone = $model.phone;
+                            mdl.name = $viewModel.name;
+                            mdl.phone = $viewModel.phone;
+
+                            //mdl.comment => Is not owned by suiJS, there is no function or event on the property.
+                            mdl.comment = $viewModel.comment;
 
                             objList.add(mdl);
 
-                            $model.$name.clear();
-                            $model.$phone.clear();
-                            $model.$name.focus();
+                            $viewModel.$name.clear();
+                            $viewModel.$phone.clear();
+                            $viewModel.$comment.clear();
+                            $viewModel.$name.focus();
                         }
                     });
 
-                    contactValidation($model);
+                    contactValidation($viewModel);
                 }
 
-                function contactValidation($model) {
-                    $model.$name.Validation = function (validForm) {
-                        if ($model.$name.trim() == '') {
+                function contactValidation($viewModel) {
+                    $viewModel.$name.Validation = function (validForm) {
+                        if ($viewModel.$name.trim() == '') {
                             validForm.addWarning('Name is required');
                         }
 
-                        if (!$model.$name.isValidFirstName()) {
+                        if (!$viewModel.$name.isValidFirstName()) {
                             validForm.addWarning('Name invalid');
                         }
                     };
 
-                    $model.$phone.Validation = function (validForm) {
-                        if ($model.$phone.trim() == '') {
+                    $viewModel.$phone.Validation = function (validForm) {
+                        if ($viewModel.$phone.trim() == '') {
                             validForm.addWarning('Phone is required');
                         }
-                        else if (!$model.$phone.isValidPhoneBr()) {
+                        else if (!$viewModel.$phone.isValidPhoneBr()) {
                             validForm.addWarning('Phone invalid format');
+                        }
+                    };
+
+                    $viewModel.$comment.Validation = function (validForm) {
+                        if ($viewModel.$comment.trim() == '') {
+                            validForm.addWarning('Comment is required');
                         }
                     };
                 }
@@ -345,9 +376,17 @@
                     <div class="cell cellInput">
                         <tt sui-comp = "text" sui-prop="phone" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2" ></tt>
                     </div>
-                </div> 
+                </div>
+                <div>
+                    <div class="cell cellLabel">
+                        Comment: 
+                    </div>
+                    <div class="cell cellInput">
+                        <tt sui-comp = "textarea" sui-prop="comment" sui-tabIndex="2" sui-nextTabIndex="3" cols="21" rows="7"></tt>
+                    </div>
+                </div>                  
                 <div style="padding:10px;text-align:right">
-                    <button sui-comp="button" sui-prop="addContact" sui-tabIndex="2" sui-nextTabIndex="0" style="width:150px;height:40px;margin-right:10px;">Add</button>
+                    <button sui-comp="button" sui-prop="addContact" sui-tabIndex="3" sui-nextTabIndex="0" style="width:150px;height:40px;margin-right:10px;">Add</button>
                 </div>  
                 
             </div>
@@ -368,6 +407,9 @@
             <h2 style="font-family: Arial, Helvetica, sans-serif; color: #0099FF; font-weight: bold"
                 sui-value="$sui.legend">
             </h2>
+            <div style="width:100%;">
+                <tt sui-comp = "img" sui-prop="titlePhoto" ></tt>
+            </div>
             <div>
                 <div class="cell cellLabel">
                     Email: 
@@ -385,11 +427,17 @@
                 </div>
             </div> 
             <div>
+                <div style="width:100%;margin-left:100px;">
+                    <tt sui-comp = "checkbox" sui-prop="rememberMe" sui-tabIndex="2" sui-nextTabIndex="3" ></tt>
+                    Remember Me
+                </div>
+            </div> 
+            <div>
                 <div class="cell cellLabel">
                     Country: 
                 </div>
                 <div class="cell cellInput">
-                    <tt sui-comp="repeater" sui-prop="countryList" sui-tabIndex="7" sui-nextTabIndex="0">
+                    <tt sui-comp="repeater" sui-prop="countryList" sui-tabIndex="3" sui-nextTabIndex="0">
                         <tt sui-comp = "hidden" sui-prop="value" ></tt>
                         <tt sui-comp = "radio" sui-prop="radio" sui-group="countries" ></tt>
                         <label sui-value="$sui.text" style="vertical-align:top;"></label>
@@ -399,10 +447,9 @@
             <div style="padding:10px;text-align:right">
                 <button sui-comp="button" sui-prop="login" sui-tabIndex="3" sui-nextTabIndex="4" style="width:150px;height:40px;margin-right:10px;">Login</button>
             </div>              
-        </div>
-
+        </div>        
         <p>&nbsp;</p>
         <p>&nbsp;</p>
         <p>&nbsp;</p>
     </body>
-</html>
+</html> 
