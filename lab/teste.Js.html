@@ -3,19 +3,87 @@
     <head>  
         <title>Form SUI.js</title>
         <script>
-            var count = 0;
 
-            var fn = new Object();
+            function child() {
+                this.lastname = 'oliveira';
+            }
+            
+            var h = new child();
 
-            fn.obj = (function (model) {
-                alert(model.email + ' | ' + model.password);
-            }, function () {
-                this.email;
-                this.password
-            });
+            /*
+                var baseCtrl = {
+                    self: null
+                    , addfn: function (fn) {
+                        this.self[fn.name] = function (action) {
+                            if (fn.model != undefined && fn.model != null) {debugger
+                                var mdl = new fn.model();
 
-            debugger
+                                if (action != null) {
+                                    action(mdl);
+                                }
 
+                                fn.method(mdl);
+                            }
+                            else {
+                                fn.method();
+                            }
+                        }
+                    }
+                };
+
+function userCtrl() {
+                var instance;
+
+                userCtrl = function () {
+                    return instance;
+                }
+
+                instance = this;
+
+                this.login = function (options) {
+                    alert(options.model.email);
+                }
+            }
+
+            var userModel = {
+                login: function () {
+                    this.email;
+                    this.password;
+                }
+            }
+
+            function contactCtrl($base) {
+                var instance;
+
+                contatctCtrl = function () {
+                    return instance;
+                }
+
+                this.search = function (options) {
+                    alert(options.model.name);
+                }
+            }
+
+            var contactModel = {
+                search: function () {
+                    this.name;
+                }
+            }
+
+                            var model = new userModel.login();
+
+                            $form.ctrl.login({
+                                model: model
+                                , success: function () {
+                                    $viewModel.$email.clear();
+                                    $viewModel.$password.clear();
+                                    $viewModel.$email.focus();
+                                }
+                                , error: function () {
+                                    
+                                }
+                            });
+            */
             window.onload = function () {
                 document.getElementById('TextArea1').onchange = function () {
                     document.title = count;

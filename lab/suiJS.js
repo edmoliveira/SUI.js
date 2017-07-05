@@ -91,7 +91,7 @@ if (typeof( [].forEach ) == 'undefined') {
             });
         }
 
-        $self_sui.loadForm = function (selector, controllerName, action) {
+        $self_sui.loadForm = function (selector, action) {
             checkClassList();
 
             var elementCollection = document.querySelectorAll('[sui-form="' + selector + '"]');
@@ -103,14 +103,6 @@ if (typeof( [].forEach ) == 'undefined') {
                     var oFormSuiJS = new formSuiJS(elementSuiForm);
 
                     oFormSuiJS.__protoSui__.$initialize();
-
-                    oFormSuiJS.__protoSui__.formName = selector;
-
-                    Object.defineProperty(oFormSuiJS, 'formName', {
-                        get: function () {
-                            return this.__protoSui__.formName;
-                        }
-                    });
 
                     action(oFormSuiJS, oFormSuiJS.$viewModel);
                 }
@@ -124,13 +116,17 @@ if (typeof( [].forEach ) == 'undefined') {
             var legendsRefArray = [];
             var propertyCollection = [];
 
+            this.onChangeProperty = null;
+
             this.__protoSui__ = new Object();
+
+            this.__protoSui__.formName = null;
+
+            this.__protoSui__.ctrl = null;
 
             this.__protoSui__.$getprotoM = function () {
                 return formModel;
             }
-
-            this.onChangeProperty = null;
 
             this.__protoSui__.$triggerChangePropertyArray = function (sender, propertyName, oldValue, newValue) {
                 if (self.onChangeProperty != null) {
@@ -142,6 +138,8 @@ if (typeof( [].forEach ) == 'undefined') {
             };
 
             this.__protoSui__.$initialize = function () {
+                self.__protoSui__.formName =  parentElement.attributes.getNamedItem('sui-form').value;
+
                 searchComponents(self, parentElement, formModel);
                         
                 legendsRefArray.forEach( function (item, index) {
@@ -178,9 +176,30 @@ if (typeof( [].forEach ) == 'undefined') {
                 return isOk;
             }
 
-            Object.defineProperty(this, "$viewModel", {
+            this.loadCtrl = function(controller) {
+                if (typeof( controller ) == 'function') {
+                    self.__protoSui__.ctrl = new controller();
+                }
+                else {
+                    self.__protoSui__.ctrl = new window[controller]();
+                }                        
+            }
+
+            Object.defineProperty(self, "$viewModel", {
                 get: function () {
-                    return this.__protoSui__.$getprotoM();
+                    return self.__protoSui__.$getprotoM();
+                }
+            });
+
+            Object.defineProperty(self, 'formName', {
+                get: function () {
+                    return self.__protoSui__.formName;
+                }
+            });
+
+            Object.defineProperty(self, 'ctrl', {
+                get: function () {
+                    return self.__protoSui__.ctrl;
                 }
             });
         }
@@ -340,6 +359,9 @@ if (typeof( [].forEach ) == 'undefined') {
 
                         if(comp.__protoSui__.CanRemoveValidation)
                         {
+                            oPropertyModel.removeValidationMessage = function () { };
+                            oPropertyModel.validate = function () { return true };
+
                             elementComp.parentNode.replaceChild(comp, elementComp);                            
                         }
                         else {
@@ -392,6 +414,9 @@ if (typeof( [].forEach ) == 'undefined') {
                         
                         if(comp.__protoSui__.CanRemoveValidation)
                         {
+                            oPropertyCustomModel.removeValidationMessage = function () { };
+                            oPropertyCustomModel.validate = function () { return true };
+                            
                             elementComp.parentNode.replaceChild(comp, elementComp);                            
                         }
                         else {
@@ -1058,6 +1083,10 @@ if (typeof( [].forEach ) == 'undefined') {
         function fnPropertyCustomModel(propertyCustomModel) {
             $self_sui.extends.propertyCustom.call(this, propertyCustomModel);
 
+            this.clear = function () {
+                propertyCustomModel.clear();
+            }
+
             this.removeValidationMessage = function() {
                 propertyCustomModel.removeValidationMessage();
             }
@@ -1099,6 +1128,14 @@ if (typeof( [].forEach ) == 'undefined') {
 
             this.set = function (v) {
                 throw 'This property is read only'
+            }
+
+            this.clear = function () {
+                if(typeof( el.__protoSui__.clear ) != 'undefined') {
+                    el.__protoSui__.clear();
+
+                    this.removeValidationMessage();
+                }
             }
 
             this.setTabIndex = function (tabIndex, nextTabIndex) {
@@ -1934,6 +1971,10 @@ if (typeof( [].forEach ) == 'undefined') {
 
                 el.__protoSui__.dataBound = new checkObject(el);
 
+                el.__protoSui__.clear = function () {
+                    el.__protoSui__.dataBound.uncheck();
+                }
+
 			    return el;                             
             }
 
@@ -1994,6 +2035,10 @@ if (typeof( [].forEach ) == 'undefined') {
                 });
 
                 el.__protoSui__.dataBound = new checkObject(el);
+
+                el.__protoSui__.clear = function () {
+                    el.__protoSui__.dataBound.uncheck();
+                }
 
 			    return el;                             
             }

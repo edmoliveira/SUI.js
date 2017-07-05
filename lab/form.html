@@ -63,16 +63,35 @@
             }
 
             function userCtrl($base) {
-                $base.addfn(function (model) {
+                var instance;
 
-                }, function () {
-                    this.email;
-                    this.password
+                userCtrl = function () {
+                    return instance;
+                }
+
+                instance = this; 
+
+                $base.post('login', 'server/login', function ($viemModel) {
+                    return {
+                        
+                    }
                 });
+            }
+
+            function contactCtrl($base) {
+                var instance;
+
+                contatctCtrl = function () {
+                    return instance;
+                }
+
+                instance = this;
             }
 
             $sui.ready(function () {
                 $sui.loadForm('userLogin', function ($form, $viewModel) {
+                    $form.loadCtrl('userCtrl');
+
                     $viewModel.legend = "Login";
                     $viewModel.countryList.dataSource = [
                         { text: 'Canada', value: 1 }
@@ -108,12 +127,15 @@
                         if ($form.validateForm()) {
                             $viewModel.$email.clear();
                             $viewModel.$password.clear();
+                            $viewModel.$rememberMe.clear();
                             $viewModel.$email.focus();
                         }
                     });
-                }).loadCtrl(userCtrl);
+                })
 
                 $sui.loadForm('caduser', function ($form, $viewModel) {
+                    $form.loadCtrl('userCtrl');
+
                     $viewModel.pageLegends.header = 'SUI.js - Framework for building mobile and desktop web applications';
                     $viewModel.pageLegends.footer = '© ' + new Date().getFullYear() + ' JENetwork ';
 
@@ -180,6 +202,8 @@
                 });
 
                 function contactForm($form, $viewModel) {
+                    $form.loadCtrl('contactCtrl');
+
                     $viewModel.name = '';
                     $viewModel.phone = '';
 
