@@ -64,12 +64,12 @@
 
             function userCtrl($base) {
                 var instance;
-                
+
                 userCtrl = function () {
                     return instance;
                 }
 
-                instance = $base.ctrl = this;
+                instance = this;
 
                 $base.post({
                     name: 'login'
@@ -78,11 +78,8 @@
                     , headers: { "Content-type": "application/json" }
                     , dataType: 'json'
                     , model: function () {
-                        this.email = "";
-                        this.password = "";
-                    }
-                    , body: function (model) {
-                        return JSON.stringify(model);
+                        this.email;
+                        this.password;
                     }
                 });
             }
@@ -134,24 +131,10 @@
 
                     $viewModel._login.on('click', function () {
                         if ($form.validateForm()) {
-                            $form.$ctrl.login({
-                                data: function (model) {
-                                    model.email = $viewModel.email;
-                                    model.password = $viewModel.password;
-                                    model.porra = ":)";
-                                }
-                                , success: function (resp) {
-                                    if (resp.isLogged) {
-                                        $viewModel.$email.clear();
-                                        $viewModel.$password.clear();
-                                        $viewModel.$rememberMe.clear();
-                                        $viewModel.$email.focus();
-                                    }
-                                }
-                                , error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                    alert(errorThrown);
-                                }
-                            });
+                            $viewModel.$email.clear();
+                            $viewModel.$password.clear();
+                            $viewModel.$rememberMe.clear();
+                            $viewModel.$email.focus();
                         }
                     });
                 })

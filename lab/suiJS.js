@@ -81,6 +81,16 @@ if (typeof( [].forEach ) == 'undefined') {
                     return this.__protoSui__[extends_propertyName];
                 }
             });
+
+            var dataTypes_propertyName = 'dataTypes';
+
+            $self_sui.__protoSui__[dataTypes_propertyName] = new $dataTypes();
+
+            Object.defineProperty($self_sui, dataTypes_propertyName, {
+                get: function () {
+                    return this.__protoSui__[dataTypes_propertyName];
+                }
+            });
         })();
 
         $self_sui.ready = function (action) {
@@ -89,6 +99,94 @@ if (typeof( [].forEach ) == 'undefined') {
                     action();
                 }
             });
+        }
+
+        function baseController() {
+            this.ctrl = null;
+
+            this.post = function (options) {
+                var dataModel = options.model; 
+                var body = options.body;
+
+                var params = {
+                    url: options.url
+                    , async: options.async
+                    , headers: options.headers
+                    , dataType: options.dataType
+                    , data: null
+                    , success: null
+                    , error: null
+                }
+
+                this.ctrl[options.name] = function (opts) {
+                    if (opts != null) {
+                        if (dataModel != null && dataModel != undefined && opts.data != null && opts.data != undefined) {
+                            var model = new dataModel();
+
+                            Object.seal(model);
+                            opts.data(model);
+                            
+                            if (body != null) {
+                                params.data = body(model);
+                            }
+                            else {
+                                params.data = model;
+                            }
+                        }
+                        else {
+                            params.data = null;
+                        }
+
+                        params.success = opts.success;
+                        params.error = opts.error;
+                    }
+                    else {
+                        params.data = null;
+                        params.success = null;
+                        params.error = null;
+                    }
+
+                    $self_sui.post(params);
+                }
+            }
+        }
+
+        $self_sui.post = function (options) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    //this.getResponseHeader("Last-Modified");
+                }
+            };
+
+            xhttp.open("post", options.url, options.async);
+
+            if (options.headers != null && options.headers != undefined) {
+                for (var header in options.headers) {
+                    xhttp.setRequestHeader(header, options.headers[header]);
+                }
+            }
+
+            xhttp.onerror = function (XMLHttpRequest, textStatus, errorThrown) {
+                if (options.error != null && options.error != undefined) {
+                    options.error(XMLHttpRequest, textStatus, errorThrown);
+                }
+            };
+
+            xhttp.onload = function () {
+                if (options.success != null && options.success != undefined) {
+                    options.success(
+                        $self_sui.dataTypes.getResponse(this, options.dataType)
+                    );
+                }
+            }
+            
+            if (options.data != undefined && options.data != null) {
+                xhttp.send(options.data);
+            }
+            else {
+                xhttp.send();
+            }
         }
 
         $self_sui.loadForm = function (selector, action) {
@@ -177,11 +275,13 @@ if (typeof( [].forEach ) == 'undefined') {
             }
 
             this.loadCtrl = function(controller) {
+                var $base = new baseController();
+
                 if (typeof( controller ) == 'function') {
-                    self.__protoSui__.ctrl = new controller();
+                    self.__protoSui__.ctrl = new controller($base);
                 }
                 else {
-                    self.__protoSui__.ctrl = new window[controller]();
+                    self.__protoSui__.ctrl = new window[controller]($base);
                 }                        
             }
 
@@ -197,7 +297,7 @@ if (typeof( [].forEach ) == 'undefined') {
                 }
             });
 
-            Object.defineProperty(self, 'ctrl', {
+            Object.defineProperty(self, '$ctrl', {
                 get: function () {
                     return self.__protoSui__.ctrl;
                 }
@@ -2690,6 +2790,46 @@ if (typeof( [].forEach ) == 'undefined') {
 
 			    return el;
 			}
+        }
+
+        function $dataTypes() {
+            this.getResponse = function (response, type) {
+                if (type != null && typeof (this[type]) != 'undefined') {
+                    return this[type](response);
+                }
+                else {
+                    return this.text(response);
+                }
+            }
+
+            this.text = function (response) {
+                return response.responseText;
+            }
+
+            this.xml = function (response) {
+                return response.responseXML;
+            }
+
+            this.json = function (response) {
+                return JSON.parse(response.responseText);
+            }
+
+            this.html = function (response) {
+                var documentXML = null;
+                var content = '<sui>' + response.responseText + '</sui>';
+
+                if (window.DOMParser) {
+                    var oDOMParser = new DOMParser();
+
+                    documentXML = parser.parseFromString(content, "text/xml");
+                } else {
+                    documentXML = new ActiveXObject("Microsoft.XMLDOM");
+                    documentXML.async = false;
+                    documentXML.loadXML(content);
+                }
+
+                return htmlDoc.documentElement;
+            }
         }
 
         function $fn() {
