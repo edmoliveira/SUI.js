@@ -2785,8 +2785,18 @@ if (typeof( [].forEach ) == 'undefined') {
             }
 
 			self.createMask = function (el, format, opt) {
-			    el.__protoSui__.objMask = new Object();
+			    var elementMask = new createElementMask(el, format, opt);
+
+                Object.defineProperty(el.__protoSui__, 'mask', {
+                    get: function () {
+                        return elementMask;
+                    }
+                });
 			}
+
+            function createElementMask(el, format, opt) {
+                
+            }
 
 			self.textToInt = function (value) {
 			    var number = parseInt(value);

@@ -3,61 +3,92 @@
     <head>  
         <title>Form SUI.js</title>
         <script>
-            var array = [1, 2, 3, 4, 5];
-            
-            var obj = new Object();
-            
-            obj.name = 'edson';
-                        
-            var class2 = {'c1': obj, 'c2': '2', 'c3': '3', 'c4': '4', 'c5': '5' };
+            window.onload = function () {
+                var text1 = document.getElementById('Text1');
+                var mask = text1.attributes.getNamedItem('mask').value;
+                var option = mask.match(/9/g).length;
 
-            console.log('start');
-            read(array);
-            console.log('end');
-            console.log('');
-            console.log('');
-            console.log('start');
-            read(class2);
-            console.log('end');
+                text1.valueHide = '';
 
-            function read(el) {
-                for (var item in el) {
-                    console.log(el[item]);
+                text1.onkeydown = function validate(e) {
+                    return validateCode(e);
                 }
-            }
-            
-            var dataModel = class2;
 
-            var model = new Object();
-            model.__sui__ = new Object();
-            
-            var __suiA__ = new Object();
+                text1.onkeyup = function (e) {
+                    if (this.value.length >= mask.length || !validateCode(e)) {
+                        return false;
+                    }
 
-            for (var property in dataModel) {
+                    var qtdOpt = option - (mask.length - this.value.length);
+                    var newMask = mask;
 
-                __suiA__[property] = dataModel[property];
-                model.__sui__[property] = new ajaxPropertyModel(__suiA__, property);
-                
-                (function (mdl, prop) {
-                    Object.defineProperty(mdl, prop, {
-                        get: function () {
-                            return mdl.__sui__[prop];
+                    if (qtdOpt > 0) {
+                        var regex = /9/g;
+                        var count = 0;
+
+                        while ((match = regex.exec(mask)) != null) {
+                            if (count < qtdOpt) {
+                                //newMask = newMask.replace(/(9)$/i, "");
+                                newMask = newMask.replaceLast(/9/i, '');
+
+                                count++;
+                            }
+                            else {
+                                break;
+                            }
                         }
-                    });
-                })(model, property);
+
+                        newMask = newMask.replace(/9/g, "0");
+                    }
+                    else {
+                        newMask = newMask.replace(/9/g, "");
+                    }
+
+                    var value = '';
+
+                    for (var index = 0; index < this.valueHide.length; index++) {
+                        var i = value.length;
+                        var texto = newMask.substring(i);
+
+                        while (texto != '' && texto.substring(0, 1) != '0') {
+                            i++;
+                            value += texto.substr(0, 1);
+                            texto = newMask.substring(i);
+                        }
+
+                        value += this.valueHide.substr(index, 1);
+                    }
+
+                    this.value = value;
+                }
+
+                text1.onkeypress = function (e) {
+                    if (this.value.length >= mask.length || !validateCode(e)) {
+                        return false;
+                    }
+
+                    this.valueHide += e.key;
+
+                    return true;
+                }
+
+                function validateCode(e) {
+                    var key = e.charCode || e.keyCode || 0;
+
+                    if (e.shiftKey || e.ctrlKey) { return false; }
+
+                    var result = (key == 8 || key == 9 || key == 13 || (key >= 48 && key <= 57) || (key >= 96 && key <= 105));
+
+                    return result;
+                }
+                function replaceLast(value, r, t) {
+                    return 
+                }
+
+                String.prototype.replaceLast = function (reg, replacement) {
+                    return this.split('').reverse().join('').replace(reg, replacement).split('').reverse().join('');
+                };
             }
-
-            function ajaxPropertyModel(model, property) {
-                this.get = function () {
-                    return model[property];
-                }
-
-                this.set = function (v) {
-                    model[property] = v;
-                }
-            };
-            
-            console.log(JSON.stringify(__suiA__));
         </script>
         <script>
 //            
@@ -265,6 +296,7 @@
     </head>
     <body>
         <div id="main">
+            <input id="Text1" type="text" mask="(00) 90000-90000" />
         </div>
 <!--        <div id="e" class="aqui teste">
             <input />
