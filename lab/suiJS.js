@@ -39,6 +39,13 @@ if (typeof( [].forEach ) == 'undefined') {
             , INFO: 2
         };
 
+        var AJAX_METHOD = {
+            GET: 0
+            , POST: 1
+            , PUT: 2
+            , DELETE: 3
+        };
+
         (function () {
             var objFn = new $fn();
 
@@ -101,92 +108,20 @@ if (typeof( [].forEach ) == 'undefined') {
             });
         }
 
-        function baseController() {
-            this.ctrl = null;
-
-            this.post = function (options) {
-                var dataModel = options.model; 
-                var body = options.body;
-
-                var params = {
-                    url: options.url
-                    , async: options.async
-                    , headers: options.headers
-                    , dataType: options.dataType
-                    , data: null
-                    , success: null
-                    , error: null
-                }
-
-                this.ctrl[options.name] = function (opts) {
-                    if (opts != null) {
-                        if (dataModel != null && dataModel != undefined && opts.data != null && opts.data != undefined) {
-                            var model = new dataModel();
-
-                            Object.seal(model);
-                            opts.data(model);
-                            
-                            if (body != null) {
-                                params.data = body(model);
-                            }
-                            else {
-                                params.data = model;
-                            }
-                        }
-                        else {
-                            params.data = null;
-                        }
-
-                        params.success = opts.success;
-                        params.error = opts.error;
-                    }
-                    else {
-                        params.data = null;
-                        params.success = null;
-                        params.error = null;
-                    }
-
-                    $self_sui.post(params);
-                }
-            }
+        $self_sui.get = function (options) {
+            ajaxExecute(AJAX_METHOD.GET, options);
         }
 
         $self_sui.post = function (options) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    //this.getResponseHeader("Last-Modified");
-                }
-            };
+            ajaxExecute(AJAX_METHOD.POST, options);
+        }
 
-            xhttp.open("post", options.url, options.async);
+        $self_sui.put = function (options) {
+            ajaxExecute(AJAX_METHOD.PUT, options);
+        }
 
-            if (options.headers != null && options.headers != undefined) {
-                for (var header in options.headers) {
-                    xhttp.setRequestHeader(header, options.headers[header]);
-                }
-            }
-
-            xhttp.onerror = function (XMLHttpRequest, textStatus, errorThrown) {
-                if (options.error != null && options.error != undefined) {
-                    options.error(XMLHttpRequest, textStatus, errorThrown);
-                }
-            };
-
-            xhttp.onload = function () {
-                if (options.success != null && options.success != undefined) {
-                    options.success(
-                        $self_sui.dataTypes.getResponse(this, options.dataType)
-                    );
-                }
-            }
-            
-            if (options.data != undefined && options.data != null) {
-                xhttp.send(options.data);
-            }
-            else {
-                xhttp.send();
-            }
+        $self_sui.delete = function (options) {
+            ajaxExecute(AJAX_METHOD.DELETE, options);
         }
 
         $self_sui.loadForm = function (selector, action) {
@@ -2910,6 +2845,12 @@ if (typeof( [].forEach ) == 'undefined') {
                     return obj.fn.trim(obj.property);
                 }
 
+                this.isEmpty = function() {
+                    var obj = this.__protoSui__;
+                    
+                    return obj.fn.trim(obj.property) == '';
+                }
+
                 this.isValidPhoneBr = function() {
                     var obj = this.__protoSui__;
 
@@ -3001,6 +2942,160 @@ if (typeof( [].forEach ) == 'undefined') {
 
             this.uncheck = function() { 
                 el.checked = false;
+            }
+        }
+
+        function ajaxExecute(method, options) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    //this.getResponseHeader("Last-Modified");
+                }
+            };
+
+            var async = true; if (options.async != null && options.async != undefined && typeof (options.async) == 'boolean') { async = options.async; }
+
+            var url = options.url;
+
+            if (method == AJAX_METHOD.GET || method == AJAX_METHOD.DELETE) {
+                if (options.data != undefined && options.data != null) {
+                    url += options.data;
+                }
+            }
+
+            var methodName = '';
+
+            for (var property in AJAX_METHOD) {
+                if (AJAX_METHOD[property] == method) {
+                    methodName = property;
+                    break;
+                }
+            }
+            
+            xhttp.open(methodName, url, options.async);
+
+            if (options.headers != null && options.headers != undefined) {
+                for (var header in options.headers) {
+                    xhttp.setRequestHeader(header, options.headers[header]);
+                }
+            }
+
+            xhttp.onerror = function (XMLHttpRequest, textStatus, errorThrown) {
+                if (options.error != null && options.error != undefined) {
+                    options.error(XMLHttpRequest, textStatus, errorThrown);
+                }
+            };
+
+            xhttp.onload = function () {
+                if (options.success != null && options.success != undefined) {
+                    options.success(
+                        $self_sui.dataTypes.getResponse(this, options.dataType)
+                    );
+                }
+            }
+
+            if (options.data != undefined && options.data != null && (method == AJAX_METHOD.POST || method == AJAX_METHOD.PUT)) {
+                xhttp.send(options.data);
+            }
+            else {
+                xhttp.send();
+            }
+        }
+
+        function baseController() {
+            var self = this;
+
+            self.ctrl = null;
+
+            self.get = function (options) {
+                setConfig('get', options);
+            }
+
+            self.put = function (options) {
+                setConfig('put', options);
+            }
+
+            self.delete = function (options) {
+                setConfig('delete', options);
+            }
+
+            self.post = function (options) {
+                setConfig('post', options);
+            }
+
+            function setConfig(method, options) {
+                var dataModel = options.model; 
+                var body = options.body;
+
+                var params = {
+                    url: options.url
+                    , async: options.async
+                    , headers: options.headers
+                    , dataType: options.dataType
+                    , data: null
+                    , success: null
+                    , error: null
+                }
+
+                self.ctrl[options.name] = function (opts) {
+                    if (opts != null) {
+                        if (dataModel != null && dataModel != undefined && opts.data != null && opts.data != undefined) {
+                            var model = new Object();
+
+                            var modelProp = new Object();
+                            var modelAux = new Object();
+
+                            for (var property in dataModel) {
+
+                                modelAux[property] = dataModel[property];
+                                modelProp[property] = new ajaxPropertyModel(modelAux, property);
+                
+                                (function (mdl, mdlProp, prop) {
+                                    Object.defineProperty(mdl, prop, {
+                                        get: function () {
+                                            return mdlProp[prop];
+                                        }
+                                    });
+                                })(model, modelProp, property);
+                            }
+
+                            opts.data(model);
+                            
+                            model = null;
+                            modelProp = null;
+
+                            if (body != null) {
+                                params.data = body(modelAux);
+                            }
+                            else {
+                                throw 'The "body" parameter is mandatory';
+                            }
+                        }
+                        else {
+                            params.data = null;
+                        }
+
+                        params.success = opts.success;
+                        params.error = opts.error;
+                    }
+                    else {
+                        params.data = null;
+                        params.success = null;
+                        params.error = null;
+                    }
+
+                    $self_sui[method](params);
+                }                
+            }
+        }
+
+        function ajaxPropertyModel(model, property) {
+            this.get = function () {
+                return model[property];
+            }
+
+            this.set = function (v) {
+                model[property] = v;
             }
         }
     }

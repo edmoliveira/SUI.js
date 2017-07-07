@@ -77,9 +77,9 @@
                     , async: true
                     , headers: { "Content-type": "application/json" }
                     , dataType: 'json'
-                    , model: function () {
-                        this.email = "";
-                        this.password = "";
+                    , model: {
+                        email: ''
+                        , password: ''
                     }
                     , body: function (model) {
                         return JSON.stringify(model);
@@ -94,7 +94,21 @@
                     return instance;
                 }
 
-                instance = this;
+                instance = $base.ctrl = this;
+
+                $base.get({
+                    name: 'getContactNumber'
+                    , url: 'http://localhost:8081/contactNumber'
+                    , async: true
+                    , headers: { "Content-type": "application/json" }
+                    , dataType: 'json'
+                    , model: {
+                        name: ''
+                    }
+                    , body: function (model) {
+                        return '?name=' + model.name;
+                    }
+                });
             }
 
             $sui.ready(function () {
@@ -136,9 +150,8 @@
                         if ($form.validateForm()) {
                             $form.$ctrl.login({
                                 data: function (model) {
-                                    model.email = $viewModel.email;
-                                    model.password = $viewModel.password;
-                                    model.porra = ":)";
+                                    model.email.set($viewModel.email);
+                                    model.password.set($viewModel.password);
                                 }
                                 , success: function (resp) {
                                     if (resp.isLogged) {
@@ -229,6 +242,22 @@
 
                     $viewModel.name = '';
                     $viewModel.phone = '';
+
+                    $viewModel.$name.on('change', function () {
+                        if (!$viewModel.$name.isEmpty()) {
+                            $form.$ctrl.getContactNumber({
+                                data: function (model) {
+                                    model.name.set($viewModel.name);
+                                }
+                                , success: function (resp) {
+                                    $viewModel.phone = resp.number;
+                                }
+                                , error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                    alert(errorThrown);
+                                }
+                            });
+                        }
+                    });
 
                     $viewModel._addContact.on('click', function () {
                         if ($form.validateForm()) {

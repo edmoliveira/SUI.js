@@ -3,54 +3,89 @@
     <head>  
         <title>Form SUI.js</title>
         <script>
+            var array = [1, 2, 3, 4, 5];
+            
+            var obj = new Object();
+            
+            obj.name = 'edson';
+                        
+            var class2 = {'c1': obj, 'c2': '2', 'c3': '3', 'c4': '4', 'c5': '5' };
 
+            console.log('start');
+            read(array);
+            console.log('end');
+            console.log('');
+            console.log('');
+            console.log('start');
+            read(class2);
+            console.log('end');
 
-            function userCtrl($base) {
-                //var instance;
-
-                userCtrl = function () {
-                    return $base.ctrl;
+            function read(el) {
+                for (var item in el) {
+                    console.log(el[item]);
                 }
+            }
+            
+            var dataModel = class2;
 
-                $base.ctrl = this;
+            var model = new Object();
+            model.__sui__ = new Object();
+            
+            var __suiA__ = new Object();
 
-                this.name = '';
+            for (var property in dataModel) {
+
+                __suiA__[property] = dataModel[property];
+                model.__sui__[property] = new ajaxPropertyModel(__suiA__, property);
+                
+                (function (mdl, prop) {
+                    Object.defineProperty(mdl, prop, {
+                        get: function () {
+                            return mdl.__sui__[prop];
+                        }
+                    });
+                })(model, property);
             }
 
-            var base = new Object();
+            function ajaxPropertyModel(model, property) {
+                this.get = function () {
+                    return model[property];
+                }
 
-
-            debugger
-            var o = new userCtrl(base);
-
-            o.name = 'edson';
-
-            var o2 = new userCtrl(base);
-
-            var req = new XMLHttpRequest();
-
-            req.open("GET", "html/form.html", false);
-            req.send(null);
-            console.log(req.responseText);
-
-        debugger
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    //this.getResponseHeader("Last-Modified");
+                this.set = function (v) {
+                    model[property] = v;
                 }
             };
-            xhttp.open("get", "html/form.html", true);
-            xhttp.setRequestHeader("Content-Type", "application/json");
-            xhttp.send();
+            
+            console.log(JSON.stringify(__suiA__));
+        </script>
+        <script>
+//            
 
-            xhttp.onerror = function (XMLHttpRequest, textStatus, errorThrown) {
-                console.log('The data failed to load :(');
-                console.log(JSON.stringify(XMLHttpRequest));
-            };
-            xhttp.onload = function () {
-                console.log('SUCCESS!');
-            }
+//            var req = new XMLHttpRequest();
+
+//            req.open("GET", "html/form.html", false);
+//            req.send(null);
+//            console.log(req.responseText);
+
+//        debugger
+//            var xhttp = new XMLHttpRequest();
+//            xhttp.onreadystatechange = function () {
+//                if (this.readyState == 4 && this.status == 200) {
+//                    //this.getResponseHeader("Last-Modified");
+//                }
+//            };
+//            xhttp.open("get", "html/form.html", true);
+//            xhttp.setRequestHeader("Content-Type", "application/json");
+//            xhttp.send();
+
+//            xhttp.onerror = function (XMLHttpRequest, textStatus, errorThrown) {
+//                console.log('The data failed to load :(');
+//                console.log(JSON.stringify(XMLHttpRequest));
+//            };
+//            xhttp.onload = function () {
+//                console.log('SUCCESS!');
+//            }
             //xhttp.send(JSON.stringify({ email: "John_Rambo@yahoo.com.br", password: "2pm" }));
 
             
