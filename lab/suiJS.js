@@ -1,4 +1,8 @@
 ﻿//#Extends!important
+String.prototype.replaceLast = function (reg, replacement) {
+    return this.split('').reverse().join('').replace(reg, replacement).split('').reverse().join('');
+};
+
 if (typeof( [].forEach ) == 'undefined') {
     Array.prototype.forEach = function (action) {
         for (var index = 0; index < this.length; index++) {
@@ -360,7 +364,7 @@ if (typeof( [].forEach ) == 'undefined') {
 
                         if (mask != null) {
                             fnName = findFunction($self_sui.masks, mask.value);
-
+                            
                             if (fnName == null) { throw 'This mask name not exists [' + mask.value + ']'; }
 
                             $self_sui.masks[fnName](comp);
@@ -998,10 +1002,6 @@ if (typeof( [].forEach ) == 'undefined') {
                 return propertyModel.getNoMask();
             }
 
-            this.setValueNoMask = function (v) {
-                propertyModel.setNoMask(v);
-            }
-
             this.clear = function () {
                 propertyModel.clear();
             }
@@ -1102,11 +1102,13 @@ if (typeof( [].forEach ) == 'undefined') {
             }
 
             this.getNoMask = function () {
-                return el.__protoSui__.getValueNoMask();
-            }
-
-            this.setNoMask = function (v) {
-                el.__protoSui__.setValueNoMask(v);
+                if( el.__protoSui__.getValueNoMask != undefined )
+                {
+                    return el.__protoSui__.getValueNoMask();
+                }
+                else {
+                    return undefined;
+                }
             }
 
             this.onChangeValue = [];
@@ -2175,18 +2177,7 @@ if (typeof( [].forEach ) == 'undefined') {
                     valueOf = v;
                     el.value = v;
 
-                    triggerValueChanged();
-                }
-
-                el.__protoSui__.getValueNoMask = function () {
-                    return valueOf;
-                }
-
-                el.__protoSui__.setValueNoMask = function (v) {
-                    valueOf = v;
-                    el.value = v;
-
-                    triggerValueChanged();
+                    el.__protoSui__.triggerValueChanged();
                 }
 
                 el.__protoSui__.setFocus = function () {
@@ -2219,10 +2210,10 @@ if (typeof( [].forEach ) == 'undefined') {
 
                 el.__protoSui__.valueChanged = [];
 
-                function triggerValueChanged() {
+                el.__protoSui__.triggerValueChanged = function () {
                     if (el.__protoSui__.valueChanged.length > 0) {
                         el.__protoSui__.valueChanged.forEach(function (item, index) {
-                            item({ value: el.value, valueNoMask: el.value });
+                            item({ value: el.value });
                         });
                     }
                 }
@@ -2262,14 +2253,6 @@ if (typeof( [].forEach ) == 'undefined') {
                     el.value = v;
 
                     triggerValueChanged();
-                }
-
-                el.__protoSui__.getValueNoMask = function () {
-                    throw 'This component has no mask' ;
-                }
-
-                el.__protoSui__.setValueNoMask = function (v) {
-                    throw 'This component has no mask' ;
                 }
 
                 el.__protoSui__.setFocus = function () {
@@ -2344,14 +2327,6 @@ if (typeof( [].forEach ) == 'undefined') {
                     el.value = v;
 
                     triggerValueChanged();
-                }
-
-                el.__protoSui__.getValueNoMask = function () {
-                    throw 'This component has no mask' ;
-                }
-
-                el.__protoSui__.setValueNoMask = function (v) {
-                    throw 'This component has no mask' ;
                 }
 
                 el.__protoSui__.setFocus = function () {
@@ -2429,14 +2404,6 @@ if (typeof( [].forEach ) == 'undefined') {
                     el.value = v;
 
                     triggerValueChanged();
-                }
-
-                el.__protoSui__.getValueNoMask = function () {
-                    throw 'This component has no mask' ;
-                }
-
-                el.__protoSui__.setValueNoMask = function (v) {
-                    throw 'This component has no mask' ;
                 }
 
                 el.__protoSui__.setFocus = function () {
@@ -2784,19 +2751,151 @@ if (typeof( [].forEach ) == 'undefined') {
                 }
             }
 
-			self.createMask = function (el, format, opt) {
-			    var elementMask = new createElementMask(el, format, opt);
+            self.createMask = function (el, mask, opt) {
+                if (opt == null) { opt = {}; }
 
-                Object.defineProperty(el.__protoSui__, 'mask', {
-                    get: function () {
-                        return elementMask;
+                var valueOfMask = null;
+
+                var optional = (mask.match(/9/g) || []).length;
+                var valueLength = mask.match(/9|0/g).length;
+                var reverse = opt.reverse == true;
+
+                el.__protoSui__.getNewValue = function () {
+                    return el.value;
+                }
+
+                el.__protoSui__.getValue = function () {
+                    return valueOfMask;
+                }
+
+                el.__protoSui__.setValue = function (v) {
+                    el.__protoSui__.valueOf = v.replace(/\D/g, '');
+                    
+                    setMaskValue(el.__protoSui__.valueOf);
+
+                    valueOfMask = el.value;
+
+                    el.__protoSui__.triggerValueChanged();
+                }
+
+                el.__protoSui__.getValueNoMask = function () {
+                    return el.__protoSui__.valueOf;
+                }            
+                
+                self.addEvent('keydown', el, function(e) {
+                    validateCode(e);
+                });
+
+                self.addEvent('keyup', el, function(e) {
+                    setMaskValue(el.__protoSui__.valueOf);
+                });
+
+                self.addEvent('keypress', el, function(e) {
+                    var keypress = {};
+
+                    if (validateCode(e, keypress)) {
+                        if (!keypress.keyNoNumbers) {
+                            el.__protoSui__.valueOf += e.key;
+                        }
                     }
                 });
-			}
 
-            function createElementMask(el, format, opt) {
+                function validateCode(e, keypress) {
+                    var key = e.charCode || e.keyCode || 0;
+
+                    if (!e.shiftKey && !e.ctrlKey) {
+                        var keyNoNumbers = (key == 46 || key == 8 || key == 9 || key == 13);
+
+                        if (keyNoNumbers || (key >= 48 && key <= 57) || (key >= 96 && key <= 105)) {
+                            if( keypress != null ) {
+                                keypress.keyNoNumbers = keyNoNumbers;
+
+                                return true;
+                            }
+                            else {
+                                if (keyNoNumbers) {
+                                    if (key == 8) {
+                                        el.__protoSui__.valueOf = el.__protoSui__.valueOf.substr(0, el.__protoSui__.valueOf.length - 1);
+                                    }
+                                    else if (key == 46) {
+                                        el.__protoSui__.valueOf = '';
+                                    }
+
+                                    return true;
+                                }
+                                else if (el.__protoSui__.valueOf.length >= valueLength) {
+                                    e.preventDefault();
+
+                                    return false;
+                                }
+                            }
+                        }
+                        else {
+                            e.preventDefault();
+
+                            return false;
+                        }
+                    }
+                    else {
+                        e.preventDefault();
+
+                        return false;
+                    }
+                }
                 
-            }
+                function setMaskValue(valueHide) {
+                    var qtdOpt = optional - (mask.match(/0|9/g).length - valueHide.length);
+                    var newMask = mask;
+
+                    if (qtdOpt > 0) {
+                        var regex = /9/g;
+                        var count = 0;
+
+                        var match;
+                        while ((match = regex.exec(mask)) != null) {
+                            if (count < qtdOpt) {
+
+                                if (!reverse) {
+                                    newMask = newMask.replace(/9/i, '0');
+                                }
+                                else {
+                                    newMask = newMask.replaceLast(/9/i, '0');
+                                }
+
+                                count++;
+                            }
+                            else {
+                                break;
+                            }
+                        }
+
+                        newMask = newMask.replace(/9/g, "Z");
+                    }
+                    else {
+                        newMask = newMask.replace(/9/g, "Z");
+                    }
+
+                    newMask = newMask.replace(/Z\WZ|Z\W/g, "");
+                    newMask = newMask.replace(/Z/g, "");
+
+                    var value = '';
+
+                    for (var index = 0; index < valueHide.length; index++) {
+                        var i = value.length;
+                        var texto = newMask.substring(i);
+
+                        while (texto != '' && texto.substring(0, 1) != '0') {
+                            i++;
+                            value += texto.substr(0, 1);
+                            texto = newMask.substring(i);
+                        }
+
+                        value += valueHide.substr(index, 1);
+                    }
+
+                    el.value = value;
+                }
+			}
 
 			self.textToInt = function (value) {
 			    var number = parseInt(value);
@@ -2828,7 +2927,11 @@ if (typeof( [].forEach ) == 'undefined') {
 
             self.time = function(selector) {
                 fn.createMask(selector, '00:00:00');
-            }          
+            }   
+            
+            self.phoneBr = function(selector) {
+                fn.createMask(selector, '(00) 90000-0000');
+            } 
         }
 
         function $extends(fn) {

@@ -243,21 +243,21 @@
                     $viewModel.name = '';
                     $viewModel.phone = '';
 
-                    $viewModel.$name.on('change', function () {
-                        if (!$viewModel.$name.isEmpty()) {
-                            $form.$ctrl.getContactNumber({
-                                data: function (model) {
-                                    model.name.set($viewModel.name);
-                                }
-                                , success: function (resp) {
-                                    $viewModel.phone = resp.number;
-                                }
-                                , error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                    alert(errorThrown);
-                                }
-                            });
-                        }
-                    });
+                    //$viewModel.$name.on('change', function () {
+                    //    if (!$viewModel.$name.isEmpty()) {
+                    //        $form.$ctrl.getContactNumber({
+                    //            data: function (model) {
+                    //                model.name.set($viewModel.name);
+                    //            }
+                    //            , success: function (resp) {
+                    //                $viewModel.phone = resp.number;
+                    //            }
+                    //            , error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //                alert(errorThrown);
+                    //            }
+                    //        });
+                    //    }
+                    //});
 
                     $viewModel._addContact.on('click', function () {
                         if ($form.validateForm()) {
@@ -327,7 +327,7 @@
                     First Name: 
                 </div>
                 <div class="cell cellInput">
-                    <tt sui-comp = "text" sui-prop="firstName" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                    <tt sui-comp = "text" sui-prop="firstName"  sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
                 </div>                
             </div>
             <div>
@@ -335,7 +335,7 @@
                     Last Name: 
                 </div>
                 <div class="cell cellInput">
-                    <tt sui-comp = "text" sui-prop="lastName" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2"></tt>
+                    <tt sui-comp = "text" sui-prop="lastName"  sui-tabIndex="1" sui-nextTabIndex="2"></tt>
                 </div>
             </div>
             <div>
@@ -343,7 +343,7 @@
                     Wife Name: 
                 </div>
                 <div class="cell cellInput">
-                    <tt sui-comp = "text" sui-prop="wifeName" sui-mask="time" sui-tabIndex="2" sui-nextTabIndex="3"></tt>
+                    <tt sui-comp = "text" sui-prop="wifeName"  sui-tabIndex="2" sui-nextTabIndex="3"></tt>
                 </div>
             </div>
             <div>
@@ -442,7 +442,7 @@
                         Name: 
                     </div>
                     <div class="cell cellInput">
-                        <tt sui-comp = "text" sui-prop="name" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                        <tt sui-comp = "text" sui-prop="name"  sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
                     </div>
                 </div>      
                 <div>
@@ -450,7 +450,7 @@
                         Phone: 
                     </div>
                     <div class="cell cellInput">
-                        <tt sui-comp = "text" sui-prop="phone" sui-mask="time" sui-tabIndex="1" sui-nextTabIndex="2" placeholder="(00) 0000-0000"></tt>
+                        <tt sui-comp = "text" sui-prop="phone" sui-mask="phonebr"  sui-tabIndex="1" sui-nextTabIndex="2" placeholder="(00) #0000-0000"></tt>
                     </div>
                 </div>
                 <div>
@@ -491,7 +491,7 @@
                     Email: 
                 </div>
                 <div class="cell cellInput">
-                    <tt sui-comp = "text" sui-prop="email" sui-mask="time" sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
+                    <tt sui-comp = "text" sui-prop="email"  sui-tabIndex="0" sui-nextTabIndex="1" ></tt>
                 </div>
             </div>      
             <div>

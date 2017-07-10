@@ -6,70 +6,102 @@
             window.onload = function () {
                 var text1 = document.getElementById('Text1');
                 var mask = text1.attributes.getNamedItem('mask').value;
-                var option = mask.match(/9/g).length;
+                var option = (mask.match(/9/g) || []).length;
+                var valueLength = mask.match(/9|0/g).length;
+                var reverse = text1.attributes.getNamedItem('reverse').value == 'true';
 
                 text1.valueHide = '';
 
                 text1.onkeydown = function validate(e) {
-                    return validateCode(e);
+                    var keyCode = e.charCode || e.keyCode || 0;
+
+                    if (validateCode(e)) {
+                        if (keyCode == 8 || keyCode == 9 || keyCode == 13 || keyCode == 46) {
+                            if (keyCode == 8) {
+                                this.valueHide = this.valueHide.substr(0, this.valueHide.length - 1);
+                            }
+                            else if (keyCode == 46) {
+                                this.valueHide = '';
+                            }
+
+                            return true;
+                        }
+                        else if (this.valueHide.length >= valueLength) {
+                            return false;
+                        }
+                    }
+                    else {
+                        return false;
+                    }
                 }
 
                 text1.onkeyup = function (e) {
-                    if (this.value.length >= mask.length || !validateCode(e)) {
-                        return false;
-                    }
+                    //if (validateCode(e)) {
+                        var qtdOpt = option - (mask.match(/0|9/g).length - this.valueHide.length);
+                        var newMask = mask;
 
-                    var qtdOpt = option - (mask.length - this.value.length);
-                    var newMask = mask;
+                        if (qtdOpt > 0) {
+                            var regex = /9/g;
+                            var count = 0;
 
-                    if (qtdOpt > 0) {
-                        var regex = /9/g;
-                        var count = 0;
+                            while ((match = regex.exec(mask)) != null) {
+                                if (count < qtdOpt) {
 
-                        while ((match = regex.exec(mask)) != null) {
-                            if (count < qtdOpt) {
-                                //newMask = newMask.replace(/(9)$/i, "");
-                                newMask = newMask.replaceLast(/9/i, '');
+                                    if (!reverse) {
+                                        newMask = newMask.replace(/9/i, '0');
+                                    }
+                                    else {
+                                        newMask = newMask.replaceLast(/9/i, '0');
+                                    }
 
-                                count++;
+                                    count++;
+                                }
+                                else {
+                                    break;
+                                }
                             }
-                            else {
-                                break;
-                            }
+
+                            newMask = newMask.replace(/9/g, "Z");
+                        }
+                        else {
+                            newMask = newMask.replace(/9/g, "Z");
                         }
 
-                        newMask = newMask.replace(/9/g, "0");
-                    }
-                    else {
-                        newMask = newMask.replace(/9/g, "");
-                    }
+                        newMask = newMask.replace(/Z\WZ|Z\W/g, "");
+                        newMask = newMask.replace(/Z/g, "");
 
-                    var value = '';
+                        var value = '';
 
-                    for (var index = 0; index < this.valueHide.length; index++) {
-                        var i = value.length;
-                        var texto = newMask.substring(i);
+                        for (var index = 0; index < this.valueHide.length; index++) {
+                            var i = value.length;
+                            var texto = newMask.substring(i);
 
-                        while (texto != '' && texto.substring(0, 1) != '0') {
-                            i++;
-                            value += texto.substr(0, 1);
-                            texto = newMask.substring(i);
+                            while (texto != '' && texto.substring(0, 1) != '0') {
+                                i++;
+                                value += texto.substr(0, 1);
+                                texto = newMask.substring(i);
+                            }
+
+                            value += this.valueHide.substr(index, 1);
                         }
 
-                        value += this.valueHide.substr(index, 1);
-                    }
-
-                    this.value = value;
+                        this.value = value;
+                    //}
                 }
 
                 text1.onkeypress = function (e) {
-                    if (this.value.length >= mask.length || !validateCode(e)) {
-                        return false;
-                    }
+                    //if (validateCode(e)) {
+                        var key = e.charCode || e.keyCode || 0;
 
-                    this.valueHide += e.key;
+                        if (key != 8 && key != 9 && key != 13 && key != 46) {
+                            this.valueHide += e.key;
+                        }
 
-                    return true;
+                        //return true;
+                    //}
+                    //else {
+                        //return false;
+                    //}
                 }
 
                 function validateCode(e) {
@@ -77,17 +109,14 @@
 
                     if (e.shiftKey || e.ctrlKey) { return false; }
 
-                    var result = (key == 8 || key == 9 || key == 13 || (key >= 48 && key <= 57) || (key >= 96 && key <= 105));
+                    var result = (key == 46 || key == 8 || key == 9 || key == 13 || (key >= 48 && key <= 57) || (key >= 96 && key <= 105));
 
                     return result;
-                }
-                function replaceLast(value, r, t) {
-                    return 
                 }
 
                 String.prototype.replaceLast = function (reg, replacement) {
                     return this.split('').reverse().join('').replace(reg, replacement).split('').reverse().join('');
-                };
+                };//(00) 90000-90000 999.999.999,99 285.105.978-55
             }
         </script>
         <script>
@@ -296,7 +325,7 @@
     </head>
     <body>
         <div id="main">
-            <input id="Text1" type="text" mask="(00) 90000-90000" />
+            <input id="Text1" type="text" mask="R$ 999.999.990,00" reverse="true" />
         </div>
 <!--        <div id="e" class="aqui teste">
             <input />
