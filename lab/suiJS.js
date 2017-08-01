@@ -2754,80 +2754,198 @@ if (typeof( [].forEach ) == 'undefined') {
             self.createMask = function (el, mask, opt) {
                 if (opt == null) { opt = {}; }
 
-                var valueOfMask = null;
+                if (opt.fixed) {
+                    el.value = mask.replace(/0/g, ' ');
+                    el.maxLength = mask.length;
 
-                var optional = (mask.match(/9/g) || []).length;
-                var valueLength = mask.match(/9|0/g).length;
-                var reverse = opt.reverse == true;
+                    var valueOfMask = null;
 
-                el.__protoSui__.getNewValue = function () {
-                    return el.value;
-                }
-
-                el.__protoSui__.getValue = function () {
-                    return valueOfMask;
-                }
-
-                el.__protoSui__.setValue = function (v) {
-                    el.__protoSui__.valueOf = v.replace(/\D/g, '');
-                    
-                    setMaskValue(el.__protoSui__.valueOf);
-
-                    valueOfMask = el.value;
-
-                    el.__protoSui__.triggerValueChanged();
-                }
-
-                el.__protoSui__.getValueNoMask = function () {
-                    return el.__protoSui__.valueOf;
-                }            
-                
-                self.addEvent('keydown', el, function(e) {
-                    validateCode(e);
-                });
-
-                self.addEvent('keyup', el, function(e) {
-                    setMaskValue(el.__protoSui__.valueOf);
-                });
-
-                self.addEvent('keypress', el, function(e) {
-                    var keypress = {};
-
-                    if (validateCode(e, keypress)) {
-                        if (!keypress.keyNoNumbers) {
-                            el.__protoSui__.valueOf += e.key;
-                        }
+                    el.__protoSui__.getNewValue = function () {
+                        return el.value;
                     }
-                });
 
-                function validateCode(e, keypress) {
-                    var key = e.charCode || e.keyCode || 0;
+                    el.__protoSui__.getValue = function () {
+                        return valueOfMask;
+                    }
 
-                    if (!e.shiftKey && !e.ctrlKey) {
-                        var keyNoNumbers = (key == 46 || key == 8 || key == 9 || key == 13);
+                    el.__protoSui__.getValueNoMask = function () {
+                        var value = '';
 
-                        if (keyNoNumbers || (key >= 48 && key <= 57) || (key >= 96 && key <= 105)) {
-                            if( keypress != null ) {
-                                keypress.keyNoNumbers = keyNoNumbers;
-
-                                return true;
+                        for (var index = 0; index < mask.length; index++) {
+                            if (mask[index] == '0') {
+                                if (valueOfMask[index] != ' ') {
+                                    value += valueOfMask[index];
+                                }
                             }
                             else {
-                                if (keyNoNumbers) {
-                                    if (key == 8) {
-                                        el.__protoSui__.valueOf = el.__protoSui__.valueOf.substr(0, el.__protoSui__.valueOf.length - 1);
-                                    }
-                                    else if (key == 46) {
-                                        el.__protoSui__.valueOf = '';
-                                    }
+                                value += valueOfMask[index];
+                            }
+                        }
+
+                        return value;
+                    }
+
+                    self.addEvent('focus', el, function (e) {
+                        el.selectionStart = 0;
+                        el.selectionEnd = 1;
+                    });
+
+                    self.addEvent('keydown', el, function (e) {
+                        var sender = validateCode(e);
+
+                        if (!sender.isValid) {
+                            e.preventDefault();
+                        }
+                        else if (sender.keyCode == 46) {
+                            el.value = mask.replace(/0/g, ' ');
+                            
+                            el.selectionStart = 0;
+                            el.selectionEnd = 0;
+
+                            e.preventDefault();
+                        }
+                        else if (sender.keyCode == 8) {
+                            var index = el.selectionStart;
+
+                            while (mask[index] != '0' && index > -1) {
+                                index--;
+                            }
+
+                            if (index > -1) {
+                                el.value = el.value.replaceAt(index, ' ');
+
+                                el.selectionStart = index - 1;
+                                el.selectionEnd = index;
+                            }
+
+                            e.preventDefault();
+                        }
+                        else if (!e.shiftKey && sender.keyCode == 9) {
+                            var index = el.selectionStart;
+
+                            while (mask[index] == '0' && index < mask.length) {
+                                index++;
+                            }
+
+                            if (index < el.value.length) {
+                                el.selectionStart = index + 1;
+                                el.selectionEnd = index + 1;
+
+                                e.preventDefault();
+                            }
+                        }
+                    });
+
+                    self.addEvent('keypress', el, function (e) {
+                        var sender = validateCode(e);
+
+                        var index = el.selectionStart;
+
+                        while (mask[index] != '0' && index < mask.length) {
+                            index++;
+                        }
+
+                        if (index < el.value.length) {
+                            el.value = el.value.replaceAt(index, sender.key);
+
+                            el.selectionStart = index + 1;
+                            el.selectionEnd = index + 1;
+                        }
+
+                        e.preventDefault();
+                    });
+
+                    function validateCode(e) {
+                        var key = e.charCode || e.keyCode || 0;
+
+                        if ((e.shiftKey && key != 9) || e.ctrlKey) { return false; }
+
+                        var result = (key == 46 || key == 8 || key == 9 || key == 13 || key == 37 || key == 39 || (key >= 48 && key <= 57) || (key >= 96 && key <= 105));
+
+                        return { isValid: result, keyCode: key, key: e.key };
+                    }
+                }
+                else {
+                    var valueOfMask = null;
+
+                    var optional = (mask.match(/9/g) || []).length;
+                    var valueLength = mask.match(/9|0/g).length;
+                    var reverse = opt.reverse == true;
+
+                    el.__protoSui__.getNewValue = function () {
+                        return el.value;
+                    }
+
+                    el.__protoSui__.getValue = function () {
+                        return valueOfMask;
+                    }
+
+                    el.__protoSui__.setValue = function (v) {
+                        el.__protoSui__.valueOf = v.replace(/\D/g, '');
+
+                        setMaskValue(el.__protoSui__.valueOf);
+
+                        valueOfMask = el.value;
+
+                        el.__protoSui__.triggerValueChanged();
+                    }
+
+                    el.__protoSui__.getValueNoMask = function () {
+                        return el.__protoSui__.valueOf;
+                    }
+
+                    self.addEvent('keydown', el, function (e) {
+                        validateCode(e);
+                    });
+
+                    self.addEvent('keyup', el, function (e) {
+                        setMaskValue(el.__protoSui__.valueOf);
+                    });
+
+                    self.addEvent('keypress', el, function (e) {
+                        var keypress = {};
+
+                        if (validateCode(e, keypress)) {
+                            if (!keypress.keyNoNumbers) {
+                                el.__protoSui__.valueOf += e.key;
+                            }
+                        }
+                    });
+
+                    function validateCode(e, keypress) {
+                        var key = e.charCode || e.keyCode || 0;
+
+                        if (!(e.shiftKey && key != 9) && !e.ctrlKey) {
+                            var keyNoNumbers = (key == 46 || key == 8 || key == 9 || key == 13);
+
+                            if (keyNoNumbers || (key >= 48 && key <= 57) || (key >= 96 && key <= 105)) {
+                                if (keypress != null) {
+                                    keypress.keyNoNumbers = keyNoNumbers;
 
                                     return true;
                                 }
-                                else if (el.__protoSui__.valueOf.length >= valueLength) {
-                                    e.preventDefault();
+                                else {
+                                    if (keyNoNumbers) {
+                                        if (key == 8) {
+                                            el.__protoSui__.valueOf = el.__protoSui__.valueOf.substr(0, el.__protoSui__.valueOf.length - 1);
+                                        }
+                                        else if (key == 46) {
+                                            el.__protoSui__.valueOf = '';
+                                        }
 
-                                    return false;
+                                        return true;
+                                    }
+                                    else if (el.__protoSui__.valueOf.length >= valueLength) {
+                                        e.preventDefault();
+
+                                        return false;
+                                    }
                                 }
+                            }
+                            else {
+                                e.preventDefault();
+
+                                return false;
                             }
                         }
                         else {
@@ -2836,64 +2954,59 @@ if (typeof( [].forEach ) == 'undefined') {
                             return false;
                         }
                     }
-                    else {
-                        e.preventDefault();
 
-                        return false;
-                    }
-                }
-                
-                function setMaskValue(valueHide) {
-                    var qtdOpt = optional - (mask.match(/0|9/g).length - valueHide.length);
-                    var newMask = mask;
+                    function setMaskValue(valueHide) {
+                        var qtdOpt = optional - (mask.match(/0|9/g).length - valueHide.length);
+                        var newMask = mask;
 
-                    if (qtdOpt > 0) {
-                        var regex = /9/g;
-                        var count = 0;
+                        if (qtdOpt > 0) {
+                            var regex = /9/g;
+                            var count = 0;
 
-                        var match;
-                        while ((match = regex.exec(mask)) != null) {
-                            if (count < qtdOpt) {
+                            var match;
+                            while ((match = regex.exec(mask)) != null) {
+                                if (count < qtdOpt) {
 
-                                if (!reverse) {
-                                    newMask = newMask.replace(/9/i, '0');
+                                    if (!reverse) {
+                                        newMask = newMask.replace(/9/i, '0');
+                                    }
+                                    else {
+                                        newMask = newMask.replaceLast(/9/i, '0');
+                                    }
+
+                                    count++;
                                 }
                                 else {
-                                    newMask = newMask.replaceLast(/9/i, '0');
+                                    break;
                                 }
+                            }
 
-                                count++;
-                            }
-                            else {
-                                break;
-                            }
+                            newMask = newMask.replace(/9/g, "Z");
+                        }
+                        else {
+                            newMask = newMask.replace(/9/g, "Z");
                         }
 
-                        newMask = newMask.replace(/9/g, "Z");
-                    }
-                    else {
-                        newMask = newMask.replace(/9/g, "Z");
-                    }
+                        newMask = newMask.replace(/Z\WZ|Z\W/g, "");
+                        newMask = newMask.replace(/Z/g, "");
 
-                    newMask = newMask.replace(/Z\WZ|Z\W/g, "");
-                    newMask = newMask.replace(/Z/g, "");
+                        var value = '';
 
-                    var value = '';
+                        for (var index = 0; index < valueHide.length; index++) {
+                            var i = value.length;
+                            var texto = newMask.substring(i);
 
-                    for (var index = 0; index < valueHide.length; index++) {
-                        var i = value.length;
-                        var texto = newMask.substring(i);
+                            while (texto != '' && texto.substring(0, 1) != '0') {
+                                i++;
+                                value += texto.substr(0, 1);
+                                texto = newMask.substring(i);
+                            }
 
-                        while (texto != '' && texto.substring(0, 1) != '0') {
-                            i++;
-                            value += texto.substr(0, 1);
-                            texto = newMask.substring(i);
+                            value += valueHide.substr(index, 1);
                         }
 
-                        value += valueHide.substr(index, 1);
+                        el.value = value;
                     }
-
-                    el.value = value;
                 }
 			}
 
@@ -2928,10 +3041,38 @@ if (typeof( [].forEach ) == 'undefined') {
             self.time = function(selector) {
                 fn.createMask(selector, '00:00:00');
             }   
-            
+
+            self.date = function (selector) {
+                fn.createMask(selector, '00/00/0000');
+            }   
+
+            self.dateTime = function (selector) {
+                fn.createMask(selector, '00/00/0000 00:00:00');
+            }  
+
+            self.moneyBr = function (selector) {
+                fn.createMask(selector, '999.999.999.990,00', { reverse: true });
+            }
+
+            self.moneySymbolBr = function (selector) {
+                fn.createMask(selector, 'R$ 999.999.999.990,00', { reverse: true });
+            }
+
             self.phoneBr = function(selector) {
                 fn.createMask(selector, '(00) 90000-0000');
             } 
+
+            self.cnpj = function (selector) {
+                fn.createMask(selector, '00.000.000/0000-00');
+            } 
+
+            self.cpf = function (selector) {
+                fn.createMask(selector, '000.000.000-00');
+            }
+
+            self.zipCodeBr = function (selector) {
+                fn.createMask(selector, '00000-000');
+            }
         }
 
         function $extends(fn) {

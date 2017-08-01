@@ -3,7 +3,7 @@
     <head>  
         <title>Form SUI.js</title>
         <script>
-            window.onload = function () {
+            window.onloadeddata = function () {
                 var text1 = document.getElementById('Text1');
                 var mask = text1.attributes.getNamedItem('mask').value;
                 var option = (mask.match(/9/g) || []).length;
@@ -322,10 +322,128 @@
                 document.writeln(typeof (list[0]['col3']));
             }*/
         </script>
+
+        <script>
+            window.onload = function () {
+                var text2 = document.getElementById('Text2');
+                var mask = text2.attributes.getNamedItem('mask').value;
+                var fixed = text2.attributes.getNamedItem('fixed').value == 'true';
+
+                text2.value = mask.replace(/0/g, ' ');
+                text2.valueHide = '';
+                text2.maxLength = mask.length;
+
+                text2.onfocus = function () {
+                    text2.selectionStart = 0;
+                    text2.selectionEnd = 1;
+                }
+
+                text2.onchange = function () {
+                    var value = '';
+                    for (var index = 0; index < mask.length; index++) {
+                        if (mask[index] == '0') {
+                            if (text2.value[index] != ' ') {
+                                value += text2.value[index];
+                            }
+                        }
+                        else {
+                            value += text2.value[index];
+                        }
+                    }
+
+                    alert(value);
+                }
+
+                text2.onkeydown = function (e) {
+                    var sender = validateCode(e);
+
+                    if (!sender.isValid) {
+                        e.preventDefault();
+                    }
+                    else if (sender.keyCode == 46) {
+                        text2.value = mask.replace(/0/g, ' ');
+                        text2.selectionStart = 0;
+                        text2.selectionEnd = 0;
+
+                        e.preventDefault();
+                    }
+                    else if (sender.keyCode == 8) {
+                        var index = text2.selectionStart;
+
+                        while (mask[index] != '0' && index > -1) {
+                            index--;
+                        }
+
+                        if (index > -1) {
+                            text2.value = text2.value.replaceAt(index, ' ');
+
+                            text2.selectionStart = index - 1;
+                            text2.selectionEnd = index;
+                        }
+
+                        e.preventDefault();
+                    }
+                    else if (!e.shiftKey && sender.keyCode == 9) {
+                        var index = text2.selectionStart;
+
+                        while (mask[index] == '0' && index < mask.length) {
+                            index++;
+                        }
+
+                        if (index < text2.value.length) {                           
+                            text2.selectionStart = index + 1;
+                            text2.selectionEnd = index + 1;
+
+                            e.preventDefault();
+                        }
+                    }
+                }
+
+                text2.onblur = function (e) {
+                    text2.onchange();
+                }
+
+                text2.onkeypress = function (e) {
+                    //var code = validateCode(e);
+                    var sender = validateCode(e);
+
+                    var index = text2.selectionStart;
+
+                    while (mask[index] != '0' && index < mask.length) {
+                        index++;
+                    }
+
+                    if (index < text2.value.length) {
+                        text2.value = text2.value.replaceAt(index, sender.key);
+
+                        text2.selectionStart = index + 1;
+                        text2.selectionEnd = index + 1;
+                    }
+
+                    e.preventDefault();
+                }
+
+                function validateCode(e) {
+                    var key = e.charCode || e.keyCode || 0;
+
+                    if ((e.shiftKey && key != 9)|| e.ctrlKey) { return false; }
+
+                    var result = (key == 46 || key == 8 || key == 9 || key == 13 || key == 37 || key == 39 || (key >= 48 && key <= 57) || (key >= 96 && key <= 105));
+
+                    return { isValid: result, keyCode: key, key: e.key };
+                }
+            }
+
+            String.prototype.replaceAt = function (index, replacement) {
+                return this.substr(0, index) + replacement + this.substr(index + replacement.length);
+            }
+        </script>
+
     </head>
     <body>
         <div id="main">
-            <input id="Text1" type="text" mask="R$ 999.999.990,00" reverse="true" />
+            <input id="Text1" type="text" mask="00/00/0000 00:00:00" reverse="false" />
+            <input id="Text2" type="text" mask="000.000.000.000" fixed="true"/>
         </div>
 <!--        <div id="e" class="aqui teste">
             <input />
