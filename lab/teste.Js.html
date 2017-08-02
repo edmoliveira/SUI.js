@@ -324,6 +324,89 @@
         </script>
 
         <script>
+            var ipconfig = '198.252.25.145';//.0.28.15'
+            var mask = '000.000.000.000';
+
+            var position = 0;
+            var contentMask = '';
+            var value = '';
+            
+            for (var index = 0; index < mask.length; index++) {
+                if (mask[index] != '0') {
+                    var result = fillMask(mask[index], ipconfig, contentMask, position, value);
+
+                    position = result.position;
+                    value = result.value;
+
+                    contentMask = '';
+
+                    if (result.isExit) {
+                        break;
+                    }
+                }
+                else {
+                    contentMask += mask[index];
+
+                    if (index == mask.length - 1) {
+                        var result = fillMask('¬', ipconfig, contentMask, position, value, true);
+
+                        position = result.position;
+                        value = result.value;
+                    }
+                }
+            }
+
+            function fillMask(valueMask, valueFormat, contentMask, position, value, isLast) {
+                var isExit = false;
+                var indexOf = valueFormat.indexOf(valueMask, position);
+
+                if (indexOf > -1) {
+                    var content = valueFormat.substr(position, indexOf - position);
+
+                    if (content.length <= contentMask.length) {
+                        while (content.length < contentMask.length) {
+                            content += ' ';
+                        }
+                    }
+                    else {
+                        content = content.substr(0, contentMask.length);
+                    }
+
+                    value += content + mask[index];
+
+                    position = indexOf + 1;
+                }
+                else {
+                    var content = valueFormat.substr(position, valueFormat.length - position);
+
+                    if (content.length <= contentMask.length) {
+                        while (content.length < contentMask.length) {
+                            content += ' ';
+                        }
+                    }
+                    else {
+                        content = content.substr(0, contentMask.length);
+                    }
+
+                    if (!isLast) {
+                        value += content + mask[index];
+                    } else {
+                        value += content;
+                    }
+
+                    for (var posI = index + 1; posI < mask.length; posI++) {
+                        value += mask[posI] == '0' ? ' ' : mask[posI];
+                    }
+
+                    isExit = true;
+                }
+
+                return { value: value, position: position, isExit: isExit };
+            }
+
+            debugger
+            console.log(value);
+
             window.onload = function () {
                 var text2 = document.getElementById('Text2');
                 var mask = text2.attributes.getNamedItem('mask').value;
@@ -350,8 +433,6 @@
                             value += text2.value[index];
                         }
                     }
-
-                    alert(value);
                 }
 
                 text2.onkeydown = function (e) {
@@ -393,6 +474,20 @@
                         if (index < text2.value.length) {                           
                             text2.selectionStart = index + 1;
                             text2.selectionEnd = index + 1;
+
+                            e.preventDefault();
+                        }
+                    }
+                    else if (e.shiftKey && sender.keyCode == 9) {
+                        var index = text2.selectionStart;                        
+
+                        while (mask[index] == '0' && index > -1) {
+                            index--;
+                        }
+
+                        if (index > -1) {
+                            text2.selectionStart = index - 1;
+                            text2.selectionEnd = index - 1;
 
                             e.preventDefault();
                         }

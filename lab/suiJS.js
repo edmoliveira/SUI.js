@@ -2768,6 +2768,15 @@ if (typeof( [].forEach ) == 'undefined') {
                         return valueOfMask;
                     }
 
+                    el.__protoSui__.setValue = function (v) {
+                        var elValue = setValue(v);
+
+                        el.value = elValue;
+                        valueOfMask = elValue;
+
+                        el.__protoSui__.triggerValueChanged();
+                    }
+
                     el.__protoSui__.getValueNoMask = function () {
                         var value = '';
 
@@ -2834,6 +2843,20 @@ if (typeof( [].forEach ) == 'undefined') {
                                 e.preventDefault();
                             }
                         }
+                        else if (e.shiftKey && sender.keyCode == 9) {
+                            var index = el.selectionStart;
+
+                            while (mask[index] == '0' && index > -1) {
+                                index--;
+                            }
+
+                            if (index > -1) {
+                                el.selectionStart = index - 1;
+                                el.selectionEnd = index - 1;
+
+                                e.preventDefault();
+                            }
+                        }
                     });
 
                     self.addEvent('keypress', el, function (e) {
@@ -2855,6 +2878,39 @@ if (typeof( [].forEach ) == 'undefined') {
                         e.preventDefault();
                     });
 
+                    function setValue(elValue) {
+                        var position = 0;
+                        var contentMask = '';
+                        var value = '';
+                        
+                        for (var index = 0; index < mask.length; index++) {
+                            if (mask[index] != '0') {
+                                var result = fillMask(mask[index], elValue, contentMask, position, value);
+
+                                position = result.position;
+                                value = result.value;
+
+                                contentMask = '';
+
+                                if (result.isExit) {
+                                    break;
+                                }
+                            }
+                            else {
+                                contentMask += mask[index];
+
+                                if (index == mask.length - 1) {
+                                    var result = fillMask('¬', elValue, contentMask, position, value, true);
+
+                                    position = result.position;
+                                    value = result.value;
+                                }
+                            }
+                        }
+
+                        return value;
+                    }
+
                     function validateCode(e) {
                         var key = e.charCode || e.keyCode || 0;
 
@@ -2863,6 +2919,54 @@ if (typeof( [].forEach ) == 'undefined') {
                         var result = (key == 46 || key == 8 || key == 9 || key == 13 || key == 37 || key == 39 || (key >= 48 && key <= 57) || (key >= 96 && key <= 105));
 
                         return { isValid: result, keyCode: key, key: e.key };
+                    }
+
+                    function fillMask(valueMask, valueFormat, contentMask, position, value, isLast) {
+                        var isExit = false;
+                        var indexOf = valueFormat.indexOf(valueMask, position);
+
+                        if (indexOf > -1) {
+                            var content = valueFormat.substr(position, indexOf - position);
+
+                            if (content.length <= contentMask.length) {
+                                while (content.length < contentMask.length) {
+                                    content += ' ';
+                                }
+                            }
+                            else {
+                                content = content.substr(0, contentMask.length);
+                            }
+
+                            value += content + mask[index];
+
+                            position = indexOf + 1;
+                        }
+                        else {
+                            var content = valueFormat.substr(position, valueFormat.length - position);
+
+                            if (content.length <= contentMask.length) {
+                                while (content.length < contentMask.length) {
+                                    content += ' ';
+                                }
+                            }
+                            else {
+                                content = content.substr(0, contentMask.length);
+                            }
+
+                            if (!isLast) {
+                                value += content + mask[index];
+                            } else {
+                                value += content;
+                            }
+
+                            for (var posI = index + 1; posI < mask.length; posI++) {
+                                value += mask[posI] == '0' ? ' ' : mask[posI];
+                            }
+
+                            isExit = true;
+                        }
+
+                        return { value: value, position: position, isExit: isExit };
                     }
                 }
                 else {
@@ -3072,6 +3176,14 @@ if (typeof( [].forEach ) == 'undefined') {
 
             self.zipCodeBr = function (selector) {
                 fn.createMask(selector, '00000-000');
+            }
+
+            self.ip = function (selector) {
+                fn.createMask(selector, '000.000.000.000', { fixed: true });
+            }
+
+            self.ipV6 = function (selector) {
+                fn.createMask(selector, '0000:0000:0000:0000:0000:0000:0000:0000', { fixed: true });
             }
         }
 
